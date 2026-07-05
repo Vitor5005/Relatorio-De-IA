@@ -1,186 +1,367 @@
-import numpy as np
+"""
+Simulated Annealing (SA) para o Problema da Mochila 0-1 (KP01)
+================================================================
+
+Ponto de partida baseado em:
+
+- Estrutura geral de projeto da instância (pesos, valores, capacidade):
+  inspirado no repositório "Knapsack-Simulated-Annealing" (JVictor011, GitHub).
+
+- Lógica do algoritmo SA em si (Algoritmo 1, geração de solução inicial,
+  operador de vizinhança, reparo de soluções infactíveis e critério de
+  aceitação de Boltzmann):
+  MORADI, N.; KAYVANFAR, V.; RAFIEE, M. "An efficient population-based
+  simulated annealing algorithm for 0-1 knapsack problem". Engineering
+  with Computers, 2021. (Algoritmos 1 a 7 do artigo)
+
+- Discussão de paralelismo / múltiplas cadeias de Markov como extensão futura:
+  LEMOS, D. V. X.; LONGO, H. J. "Uso de GPUs na resolução do Problema da
+  Mochila Multidimensional" (revisão sobre SA paralelo para MKP/KP).
+
+O código foi escrito para deixar EXPLÍCITOS os pontos que você deve variar
+e justificar no relatório:
+    - método de geração da solução inicial (RISP vs GISP)
+    - operador de vizinhança (quantidade de bits "flipados", m)
+    - método de reparo/melhoria de soluções infactíveis (Zhan_RI)
+    - parâmetros do cronograma de temperatura (T_max, T_min, alpha, max_iter)
+"""
+
+from __future__ import annotations
 import random
 import math
-import time
-
-# =========================
-# PARÂMETROS
-# =========================
-NOME_ARQUIVO = "test.in"
-
-TMAX = 1000.0
-# Temperatura inicial.
-# Valores maiores permitem aceitar mais soluções piores no começo,
-# aumentando a exploração do espaço de busca.
-
-TMIN = 1.0 # Padrão: 1.0
-# Temperatura final mínima.
-# Quando a temperatura chega abaixo desse valor, o algoritmo para.
-# Valores menores fazem o algoritmo rodar por mais tempo.
-
-ALPHA = 0.995
-# Taxa de resfriamento.
-# A cada ciclo, a temperatura é multiplicada por esse fator.
-# Quanto mais próximo de 1, mais lento é o resfriamento.
-
-ITER_POR_TEMPERATURA = 100
-# Número de vizinhos testados em cada nível de temperatura.
-# Valores maiores aumentam o tempo de execução, mas podem melhorar a busca.
-
-PENALIDADE = 1000
-# Penalidade aplicada quando a solução ultrapassa a capacidade da mochila.
-# Quanto maior esse valor, mais o algoritmo evita soluções inviáveis.
-
-SEMENTE = 42
-# Semente aleatória.
-# Garante reprodutibilidade, ou seja, execuções iguais com os mesmos parâmetros.
-
-# =========================
-# LEITURA DA INSTÂNCIA
-# =========================
-def ler_instancia(nome_arquivo):
-    with open(nome_arquivo, "r") as arquivo:
-        linhas = [linha.strip() for linha in arquivo if linha.strip()]
-
-    quantidade_itens = int(linhas[0])
-
-    valores = []
-    pesos = []
-
-    for i in range(1, quantidade_itens + 1):
-        partes = linhas[i].split()
-        valor = int(partes[1])
-        peso = int(partes[2])
-        valores.append(valor)
-        pesos.append(peso)
-
-    capacidade = int(linhas[quantidade_itens + 1])
-    return np.array(valores), np.array(pesos), capacidade
+from dataclasses import dataclass, field
+from typing import List, Tuple, Callable, Optional
 
 
+# ---------------------------------------------------------------------------
+# 1. Representação da instância do problema
+# ---------------------------------------------------------------------------
 
-# =========================
-# FUNÇÕES AUXILIARES
-# =========================
-def avaliar(solucao):
-    valor_total = int(np.dot(solucao, valores))
-    peso_total = int(np.dot(solucao, pesos))
-    return valor_total, peso_total
+@dataclass
+class KnapsackInstance:
+    """Representa uma instância do KP01.
 
-def energia(solucao, penalidade=PENALIDADE):
-    valor, peso = avaliar(solucao)
-    if peso <= capacidade:
-        return -valor
-    return -valor + penalidade * (peso - capacidade)
+    weights[i] e profits[i] são o peso e o lucro do item i.
+    capacity é a capacidade máxima da mochila (C no artigo, Eq. 1).
+    """
+    weights: List[float]
+    profits: List[float]
+    capacity: float
 
-def solucao_inicial_gulosa():
-    razao = valores / pesos
-    ordem = np.argsort(-razao)
-    sol = np.zeros(n, dtype=np.int8)
-    peso_atual = 0
+    def __post_init__(self):
+        assert len(self.weights) == len(self.profits)
+        self.n = len(self.weights)
+        # v_i = p_i / w_i -> "density metric" (métrica de densidade),
+        # usada no GISP e nos operadores de reparo (Seção 2, do artigo).
+        self.density = [self.profits[i] / self.weights[i] for i in range(self.n)]
+        # índices ordenados do MENOR para o MAIOR v_i (usado nos Algoritmos 3, 5 e 6)
+        self.order_by_density = sorted(range(self.n), key=lambda i: self.density[i])
 
-    for i in ordem:
-        if peso_atual + pesos[i] <= capacidade:
-            sol[i] = 1
-            peso_atual += pesos[i]
+    @staticmethod
+    def random_instance(
+        n: int,
+        capacity_ratio: float = 0.75,
+        correlation: str = "uncorrelated",
+        seed: Optional[int] = None,
+    ) -> "KnapsackInstance":
+        """Gera uma instância aleatória seguindo a Tabela 7 do artigo do Moradi et al.
 
+        correlation:
+            "uncorrelated"      -> p_i ~ U(10,100), w_i ~ U(10,100)
+            "weakly_correlated" -> p_i ~ U(w_i-10, w_i+10), w_i ~ U(10,100)
+            "strongly_correlated" -> p_i = w_i + 10, w_i ~ U(10,100)
+
+        capacity_ratio: C = capacity_ratio * soma dos pesos (0.75 no artigo)
+        """
+        rng = random.Random(seed)
+        weights = [rng.uniform(10, 100) for _ in range(n)]
+
+        if correlation == "uncorrelated":
+            profits = [rng.uniform(10, 100) for _ in range(n)]
+        elif correlation == "weakly_correlated":
+            profits = [rng.uniform(w - 10, w + 10) for w in weights]
+        elif correlation == "strongly_correlated":
+            profits = [w + 10 for w in weights]
+        else:
+            raise ValueError(f"correlation desconhecida: {correlation}")
+
+        capacity = capacity_ratio * sum(weights)
+        return KnapsackInstance(weights, profits, capacity)
+
+
+def load_instance_pisinger_format(path):
+    """Carrega uma instância no formato usado pelos geradores de instâncias
+    "difíceis" de Pisinger (comum em benchmarks de KP01), como o arquivo
+    test.in:
+
+        n
+        id_1  profit_1  weight_1
+        id_2  profit_2  weight_2
+        ...
+        id_n  profit_n  weight_n
+        capacity
+
+    Os ids (1..n) são apenas identificadores e não são usados; a ordem das
+    linhas define a ordem dos itens no vetor de solução.
+    """
+    with open(path, "r") as f:
+        tokens = f.read().split()
+
+    idx = 0
+    n = int(tokens[idx]); idx += 1
+
+    weights = []
+    profits = []
+    for _ in range(n):
+        idx += 1  # pula o id do item (não usado)
+        profit = float(tokens[idx]); idx += 1
+        weight = float(tokens[idx]); idx += 1
+        profits.append(profit)
+        weights.append(weight)
+
+    capacity = float(tokens[idx]); idx += 1
+
+    return KnapsackInstance(weights=weights, profits=profits, capacity=capacity)
+
+
+Solution = List[int]  # vetor binário X_i em {0,1}
+
+
+def total_weight(sol: Solution, inst: KnapsackInstance) -> float:
+    return sum(inst.weights[i] for i, x in enumerate(sol) if x == 1)
+
+
+def fitness(sol: Solution, inst: KnapsackInstance) -> float:
+    """Função objetivo: soma dos lucros dos itens selecionados (Eq. 1)."""
+    return sum(inst.profits[i] for i, x in enumerate(sol) if x == 1)
+
+
+def is_feasible(sol: Solution, inst: KnapsackInstance) -> bool:
+    return total_weight(sol, inst) <= inst.capacity
+
+
+# ---------------------------------------------------------------------------
+# 2. Geração da solução inicial: RISP e GISP (Algoritmos 2 e 3 do artigo)
+# ---------------------------------------------------------------------------
+
+def risp_initial_solution(inst: KnapsackInstance, rng: random.Random) -> Solution:
+    """Random Initial Solution Phase: cada bit é sorteado aleatoriamente.
+    É rápido, mas normalmente gera uma solução infactível ou de baixa
+    qualidade -> precisa de reparo em seguida."""
+    return [rng.randint(0, 1) for _ in range(inst.n)]
+
+
+def gisp_initial_solution(inst: KnapsackInstance) -> Solution:
+    """Greedy Initial Solution Phase (Algoritmo 3): ordena os itens por
+    densidade v_i = p_i/w_i (decrescente) e vai inserindo enquanto não
+    ultrapassar a capacidade. Gera soluções de melhor qualidade que o RISP,
+    ao custo de menos diversidade."""
+    sol = [0] * inst.n
+    order_desc = list(reversed(inst.order_by_density))  # do maior p/w pro menor
+    current_weight = 0.0
+    for idx in order_desc:
+        if current_weight + inst.weights[idx] <= inst.capacity:
+            sol[idx] = 1
+            current_weight += inst.weights[idx]
     return sol
 
-def solucao_inicial_aleatoria():
-    sol = np.zeros(n, dtype=np.int8)
-    ordem = np.random.permutation(n)
-    peso_atual = 0
 
-    for i in ordem:
-        if np.random.rand() < 0.5 and peso_atual + pesos[i] <= capacidade:
-            sol[i] = 1
-            peso_atual += pesos[i]
-
-    return sol
-
-def gerar_vizinho(solucao):
-    vizinho = solucao.copy()
-    i = np.random.randint(n)
-    vizinho[i] = 1 - vizinho[i]
-
-    if np.dot(vizinho, pesos) <= capacidade:
-        return vizinho
-
-    indices_1 = np.where(vizinho == 1)[0]
-    if len(indices_1) > 0:
-        j = np.random.choice(indices_1)
-        vizinho[j] = 0
-
-    return vizinho
-
-# =========================
-# SIMULATED ANNEALING
-# =========================
-def simulated_annealing(
-    Tmax=TMAX,
-    Tmin=TMIN,
-    alpha=ALPHA,
-    iter_por_temperatura=ITER_POR_TEMPERATURA,
-    penalidade=PENALIDADE,
-    usar_gulosa=True,
-    semente=SEMENTE
-):
-    if semente is not None:
-        np.random.seed(semente)
-        random.seed(semente)
-
-    if usar_gulosa:
-        atual = solucao_inicial_gulosa()
+def generate_initial_solution(
+    inst: KnapsackInstance, method: str, rng: random.Random
+) -> Solution:
+    if method == "RISP":
+        sol = risp_initial_solution(inst, rng)
+        sol = repair_and_improve(sol, inst)  # RISP quase sempre precisa reparo
+        return sol
+    elif method == "GISP":
+        return gisp_initial_solution(inst)
     else:
-        atual = solucao_inicial_aleatoria()
+        raise ValueError("method deve ser 'RISP' ou 'GISP'")
 
-    melhor = atual.copy()
-    e_atual = energia(atual, penalidade)
-    e_melhor = e_atual
 
-    T = Tmax
-    historico = []
-    inicio = time.time()
+# ---------------------------------------------------------------------------
+# 3. Reparo e melhoria de soluções infactíveis: Zhan_RI (Algoritmos 5 e 6)
+# ---------------------------------------------------------------------------
 
-    while T > Tmin:
-        for _ in range(iter_por_temperatura):
-            vizinho = gerar_vizinho(atual)
-            e_vizinho = energia(vizinho, penalidade)
-            delta = e_vizinho - e_atual
+def repair(sol: Solution, inst: KnapsackInstance) -> Solution:
+    """Algoritmo 5: remove itens com MENOR p/w enquanto a mochila estiver
+    acima da capacidade."""
+    sol = sol.copy()
+    weight = total_weight(sol, inst)
+    for idx in inst.order_by_density:  # do menor p/w pro maior
+        if weight <= inst.capacity:
+            break
+        if sol[idx] == 1:
+            sol[idx] = 0
+            weight -= inst.weights[idx]
+    return sol
 
-            if delta < 0 or np.random.rand() < math.exp(-delta / T):
-                atual = vizinho
-                e_atual = e_vizinho
 
-                if e_atual < e_melhor:
-                    melhor = atual.copy()
-                    e_melhor = e_atual
+def improve(sol: Solution, inst: KnapsackInstance) -> Solution:
+    """Algoritmo 6: tenta adicionar itens com MAIOR p/w enquanto não
+    ultrapassar a capacidade (melhora soluções factíveis "frouxas")."""
+    sol = sol.copy()
+    weight = total_weight(sol, inst)
+    for idx in reversed(inst.order_by_density):  # do maior p/w pro menor
+        if sol[idx] == 0 and weight + inst.weights[idx] <= inst.capacity:
+            sol[idx] = 1
+            weight += inst.weights[idx]
+    return sol
 
-        valor_melhor, peso_melhor = avaliar(melhor)
-        historico.append((T, valor_melhor, peso_melhor))
-        T *= alpha
 
-    tempo_total = time.time() - inicio
-    valor_final, peso_final = avaliar(melhor)
+def repair_and_improve(sol: Solution, inst: KnapsackInstance) -> Solution:
+    """Zhan_RI: repara (se infactível) e depois melhora (Figs. 5 e 6)."""
+    if not is_feasible(sol, inst):
+        sol = repair(sol, inst)
+    sol = improve(sol, inst)
+    return sol
 
-    return {
-        "solucao": melhor,
-        "valor": valor_final,
-        "peso": peso_final,
-        "viavel": peso_final <= capacidade,
-        "tempo": tempo_total,
-        "historico": historico
-    }
 
-# =========================
-# PROGRAMA PRINCIPAL
-# =========================
-valores, pesos, capacidade = ler_instancia(NOME_ARQUIVO)
-n = len(valores)
+# ---------------------------------------------------------------------------
+# 4. Operador de vizinhança: m-flipping (Algoritmo 7)
+# ---------------------------------------------------------------------------
 
-resultado = simulated_annealing()
+def m_flip_neighbor(sol: Solution, m: int, rng: random.Random) -> Solution:
+    """Sorteia m posições e inverte o bit (0->1 ou 1->0).
+    m é um parâmetro a ser calibrado: valores pequenos (m=1,2,3) fazem
+    busca local mais "fina"; valores maiores tornam a busca mais "global"
+    (mais próxima de uma nova solução aleatória), aumentando diversificação
+    mas podendo prejudicar a convergência."""
+    sol = sol.copy()
+    n = len(sol)
+    positions = rng.sample(range(n), k=min(m, n))
+    for j in positions:
+        sol[j] = 1 - sol[j]
+    return sol
 
-print("Valor:", resultado["valor"])
-print("Peso:", resultado["peso"])
-print("Viável:", resultado["viavel"])
-print("Tempo:", resultado["tempo"])
+
+# ---------------------------------------------------------------------------
+# 5. Simulated Annealing (Algoritmo 1)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SAResult:
+    best_solution: Solution
+    best_fitness: float
+    history: List[Tuple[float, float]] = field(default_factory=list)
+    # history: lista de (temperatura, melhor_fitness_até_o_momento)
+    # útil para reproduzir gráficos de convergência como as Figs. 12-15 do artigo
+
+
+def simulated_annealing(
+    inst: KnapsackInstance,
+    T_max: float = 1000.0,
+    T_min: float = 0.0001,
+    alpha: float = 0.98,
+    max_iteration: int = 100,
+    m: int = 2,
+    initial_method: str = "GISP",
+    seed: Optional[int] = None,
+) -> SAResult:
+    """Implementação do Algoritmo 1 (SSA) do artigo do Moradi et al.
+
+    Parâmetros a variar/justificar no relatório:
+        T_max, T_min, alpha  -> cronograma de temperatura (cooling schedule)
+        max_iteration        -> nº de iterações por temperatura fixa
+        m                     -> "força" do operador de vizinhança (m-flip)
+        initial_method        -> "RISP" (aleatório) ou "GISP" (guloso)
+    """
+    rng = random.Random(seed)
+
+    s = generate_initial_solution(inst, initial_method, rng)
+    f_s = fitness(s, inst)
+
+    best_sol, best_fit = s.copy(), f_s
+    history: List[Tuple[float, float]] = [(T_max, best_fit)]
+
+    T = T_max
+    while T >= T_min:
+        for _ in range(max_iteration):
+            s_prime = m_flip_neighbor(s, m, rng)
+            s_prime = repair_and_improve(s_prime, inst)
+            f_s_prime = fitness(s_prime, inst)
+
+            delta = f_s - f_s_prime  # delta_E = f(s') - f(s), mas maximizamos
+            # (invertemos o sinal em relação ao artigo, que minimiza por
+            # convenção do pseudocódigo genérico de SA)
+            if f_s_prime >= f_s:
+                s, f_s = s_prime, f_s_prime  # aceita solução melhor/igual
+            else:
+                # aceita solução pior com probabilidade e^{-delta/T}
+                # (critério de Boltzmann, linha 11 do Algoritmo 1)
+                prob = math.exp(-delta / T) if T > 0 else 0.0
+                if rng.random() < prob:
+                    s, f_s = s_prime, f_s_prime
+
+            if f_s > best_fit:
+                best_sol, best_fit = s.copy(), f_s
+
+        history.append((T, best_fit))
+        T *= alpha  # cronograma de resfriamento geométrico T = alpha * T
+
+    return SAResult(best_solution=best_sol, best_fitness=best_fit, history=history)
+
+
+# ---------------------------------------------------------------------------
+# 6. Exemplo de uso / teste rápido
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    # Instância pequena "de bolso" para checar rapidamente que está funcionando
+    weights = [2, 3, 4, 5, 9]
+    profits = [3, 4, 5, 8, 10]
+    capacity = 10
+    inst = KnapsackInstance(weights, profits, capacity)
+
+    result = simulated_annealing(
+        inst,
+        T_max=1000,
+        T_min=0.001,
+        alpha=0.95,
+        max_iteration=50,
+        m=1,
+        initial_method="GISP",
+        seed=42,
+    )
+
+    print("Melhor solução:", result.best_solution)
+    print("Melhor valor (fitness):", result.best_fitness)
+    print("Peso total:", total_weight(result.best_solution, inst), "/", capacity)
+
+    # Instância maior e aleatória, para testes de calibração de parâmetros
+    big_inst = KnapsackInstance.random_instance(
+        n=200, capacity_ratio=0.75, correlation="uncorrelated", seed=1
+    )
+    result_big = simulated_annealing(big_inst, seed=1)
+    print("\nInstância aleatória (n=200):")
+    print("Melhor valor encontrado:", result_big.best_fitness)
+
+    # ---------------------------------------------------------------------
+    # Carregando a instância real do arquivo test.in (formato Pisinger)
+    # ---------------------------------------------------------------------
+    import time
+
+    test_inst = load_instance_pisinger_format("./test.in")
+    print(f"\nInstância test.in: n={test_inst.n}, capacidade={test_inst.capacity}")
+
+    t0 = time.time()
+    result_test = simulated_annealing(
+        test_inst,
+        T_max=1000,
+        T_min=0.001,
+        alpha=0.98,
+        max_iteration=30,
+        m=2,
+        initial_method="GISP",
+        seed=1,
+    )
+    elapsed = time.time() - t0
+
+    print("\nMelhor valor encontrado:", result_test.best_fitness)
+    print(
+        "Peso total usado:",
+        total_weight(result_test.best_solution, test_inst),
+        "/",
+        test_inst.capacity,
+    )
+    print(f"Tempo de execução: {elapsed:.2f}s")
