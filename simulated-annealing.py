@@ -303,7 +303,200 @@ def simulated_annealing(
 
 
 # ---------------------------------------------------------------------------
-# 6. Exemplo de uso / teste rápido
+# 6. Simulated Annealing com LOG detalhado (todas as iterações/passos)
+# ---------------------------------------------------------------------------
+
+def simulated_annealing_with_log(
+    inst: KnapsackInstance,
+    T_max: float = 1000.0,
+    T_min: float = 0.0001,
+    alpha: float = 0.98,
+    max_iteration: int = 100,
+    m: int = 2,
+    initial_method: str = "GISP",
+    seed: Optional[int] = None,
+    log_path: Optional[str] = None,
+):
+    """Versão do SA (idêntica em lógica à `simulated_annealing`) que registra,
+    para CADA iteração/passo executado, os dados necessários para auditar
+    o comportamento do algoritmo:
+
+        step                 -> número sequencial do passo (1, 2, 3, ...)
+        temperature          -> temperatura T no momento do passo
+        iteration_in_temp    -> qual iteração dentro do nível de temperatura atual
+        current_fitness      -> fitness da solução corrente (s) ANTES do passo
+        candidate_fitness    -> fitness da solução vizinha gerada (s')
+        delta                -> f(s) - f(s') (positivo = candidata é pior)
+        acceptance_prob      -> probabilidade de aceitação usada (1.0 se candidata
+                                 é melhor/igual; e^{-delta/T} caso contrário)
+        accepted             -> se a solução candidata foi aceita neste passo
+        best_fitness_so_far  -> melhor fitness encontrado até este passo (inclusive)
+
+    Se `log_path` for informado, o log completo é salvo em um arquivo CSV
+    nesse caminho. Retorna (SAResult, log), onde `log` é uma lista de dicts
+    (um por passo), útil para gerar gráficos de convergência ou depurar o
+    comportamento do algoritmo (ex.: taxa de aceitação por temperatura).
+    """
+    import csv
+
+    rng = random.Random(seed)
+
+    s = generate_initial_solution(inst, initial_method, rng)
+    f_s = fitness(s, inst)
+
+    best_sol, best_fit = s.copy(), f_s
+    log: List[dict] = []
+    step = 0
+
+    T = T_max
+    while T >= T_min:
+        for it in range(max_iteration):
+            step += 1
+            s_prime = m_flip_neighbor(s, m, rng)
+            s_prime = repair_and_improve(s_prime, inst)
+            f_s_prime = fitness(s_prime, inst)
+
+            delta = f_s - f_s_prime
+
+            if f_s_prime >= f_s:
+                accepted = True
+                acceptance_prob = 1.0
+                s, f_s = s_prime, f_s_prime
+            else:
+                acceptance_prob = math.exp(-delta / T) if T > 0 else 0.0
+                accepted = rng.random() < acceptance_prob
+                if accepted:
+                    s, f_s = s_prime, f_s_prime
+
+            if f_s > best_fit:
+                best_sol, best_fit = s.copy(), f_s
+
+            log.append({
+                "step": step,
+                "temperature": T,
+                "iteration_in_temp": it + 1,
+                "current_fitness": f_s,
+                "candidate_fitness": f_s_prime,
+                "delta": delta,
+                "acceptance_prob": acceptance_prob,
+                "accepted": accepted,
+                "best_fitness_so_far": best_fit,
+            })
+
+        T *= alpha
+
+    result = SAResult(best_solution=best_sol, best_fitness=best_fit)
+
+    if log_path is not None:
+        with open(log_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=list(log[0].keys()))
+            writer.writeheader()
+            writer.writerows(log)
+
+    return result, log
+
+
+# ---------------------------------------------------------------------------
+# 7. Simulated Annealing "verbose" (log no formato pedido pelo professor)
+# ---------------------------------------------------------------------------
+
+def simulated_annealing_verbose(
+    inst: KnapsackInstance,
+    T_max: float = 1000.0,
+    T_min: float = 0.0001,
+    alpha: float = 0.98,
+    max_iteration: int = 100,
+    m: int = 2,
+    initial_method: str = "GISP",
+    seed: Optional[int] = None,
+    print_every: int = 100,
+):
+    """Versão do SA que imprime o progresso no formato:
+
+        SA (Orçamento: <N> avaliações)...
+        Ciclo 0000 | Temp: 200.00 | Melhor Custo: 18844.0 | Tempo Decorrido: 0.00s
+        Ciclo 0100 | Temp: 1.18   | Melhor Custo: 18844.0 | Tempo Decorrido: 1.20s
+        ...
+
+    Cada "Ciclo" corresponde a um nível de temperatura (isto é, ao laço
+    externo `while T >= T_min`), da mesma forma que uma "Geração" no GA
+    corresponde a uma população inteira avaliada. Dentro de cada ciclo,
+    `max_iteration` vizinhos são avaliados antes de resfriar (T *= alpha).
+
+    IMPORTANTE: o KP01 é um problema de MAXIMIZAÇÃO (queremos o MAIOR lucro
+    possível), então "Melhor Custo" aqui tende a CRESCER ao longo dos ciclos
+    -- ao contrário de problemas de minimização (ex.: os logs de exemplo do
+    GA/TSP do professor), onde o custo tende a CAIR. Se o professor exigir
+    que o rótulo/tendência seja literalmente "Custo" decrescente, basta
+    reportar o negativo do fitness (custo = -melhor_fitness) na impressão.
+    """
+    import time
+
+    rng = random.Random(seed)
+
+    s = generate_initial_solution(inst, initial_method, rng)
+    f_s = fitness(s, inst)
+    best_sol, best_fit = s.copy(), f_s
+
+    # "Orçamento" análogo ao do GA: total de avaliações de vizinhos que serão
+    # feitas ao longo de toda a execução (ciclos de resfriamento x iterações).
+    n_cycles_estimate = max(1, int(math.log(T_min / T_max) / math.log(alpha)))
+    total_evaluations = n_cycles_estimate * max_iteration
+    print(f"Iniciando SA (Orçamento: {total_evaluations} avaliações)...")
+
+    t_start = time.time()
+    log: List[dict] = []
+    cycle = 0
+
+    T = T_max
+    while T >= T_min:
+        for _ in range(max_iteration):
+            s_prime = m_flip_neighbor(s, m, rng)
+            s_prime = repair_and_improve(s_prime, inst)
+            f_s_prime = fitness(s_prime, inst)
+
+            delta = f_s - f_s_prime
+            if f_s_prime >= f_s:
+                s, f_s = s_prime, f_s_prime
+            else:
+                prob = math.exp(-delta / T) if T > 0 else 0.0
+                if rng.random() < prob:
+                    s, f_s = s_prime, f_s_prime
+
+            if f_s > best_fit:
+                best_sol, best_fit = s.copy(), f_s
+
+        elapsed = time.time() - t_start
+        log.append({
+            "cycle": cycle,
+            "temperature": T,
+            "best_cost": best_fit,
+            "elapsed_time": elapsed,
+        })
+
+        if cycle % print_every == 0:
+            print(
+                f"Ciclo {cycle:04d} | Temp: {T:10.2f} | "
+                f"Melhor Custo: {best_fit:.1f} | Tempo Decorrido: {elapsed:.2f}s"
+            )
+
+        cycle += 1
+        T *= alpha
+
+    # garante que o último ciclo também apareça no log/print, mesmo que não
+    # seja múltiplo de print_every
+    elapsed = time.time() - t_start
+    print(
+        f"Ciclo {cycle - 1:04d} | Temp: {T / alpha:10.2f} | "
+        f"Melhor Custo: {best_fit:.1f} | Tempo Decorrido: {elapsed:.2f}s  (final)"
+    )
+
+    result = SAResult(best_solution=best_sol, best_fitness=best_fit)
+    return result, log
+
+
+# ---------------------------------------------------------------------------
+# 8. Exemplo de uso / teste rápido
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -341,17 +534,18 @@ if __name__ == "__main__":
     # ---------------------------------------------------------------------
     import time
 
+    # test_inst = KnapsackInstance.random_instance(200)
     test_inst = load_instance_pisinger_format("./test.in")
     print(f"\nInstância test.in: n={test_inst.n}, capacidade={test_inst.capacity}")
 
     t0 = time.time()
     result_test = simulated_annealing(
         test_inst,
-        T_max=1000,
+        T_max=200,
         T_min=0.001,
-        alpha=0.98,
-        max_iteration=30,
-        m=2,
+        alpha=0.95,
+        max_iteration=60,
+        m=4,
         initial_method="GISP",
         seed=1,
     )
@@ -365,3 +559,43 @@ if __name__ == "__main__":
         test_inst.capacity,
     )
     print(f"Tempo de execução: {elapsed:.2f}s")
+
+    # ---------------------------------------------------------------------
+    # Gerando o LOG completo de execução (todas as iterações), salvo em CSV
+    # ---------------------------------------------------------------------
+    result_logged, log = simulated_annealing_with_log(
+        test_inst,
+        T_max=200,
+        T_min=0.001,
+        alpha=0.95,
+        max_iteration=60,
+        m=4,
+        initial_method="GISP",
+        seed=1,
+        log_path="sa_log.csv",
+    )
+
+    print(f"\nLog gerado com {len(log)} passos (salvo em sa_log.csv)")
+    print("Melhor valor (via versão com log):", result_logged.best_fitness)
+    print("\nPrimeiros 3 passos do log:")
+    for row in log[:3]:
+        print(row)
+    print("\nÚltimos 3 passos do log:")
+    for row in log[-3:]:
+        print(row)
+
+    # ---------------------------------------------------------------------
+    # Versão "verbose" (formato Ciclo/Temp/Melhor Custo/Tempo Decorrido)
+    # ---------------------------------------------------------------------
+    print("\n" + "=" * 70)
+    result_verbose, cycles_log = simulated_annealing_verbose(
+        test_inst,
+        T_max=200,
+        T_min=0.001,
+        alpha=0.95,
+        max_iteration=60,
+        m=4,
+        initial_method="GISP",
+        seed=1,
+        print_every=10,
+    )
