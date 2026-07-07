@@ -526,8 +526,8 @@ if __name__ == "__main__":
     result, log = simulated_annealing_verbose(
         test_inst,
         T_max=100,
-        T_min=0.001,
-        alpha=0.92,
+        T_min=0.01,
+        alpha=0.9,
         max_iteration=60,
         m=2,
         initial_method="GISP",
