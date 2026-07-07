@@ -1,3 +1,0 @@
-geracao;tempo_geracao_s;tempo_acumulado_s;valor_acumulado_melhor_geracao;peso_acumulado_melhor_geracao;quantidade_itens_melhor_geracao;fitness_medio_populacao;fitness_pior_populacao;melhor_valor_global_ate_agora;peso_melhor_global_ate_agora;quantidade_itens_melhor_global_ate_agora;geracao_melhor_global;houve_melhoria_global
-1;0.252903;0.252903;134305;50885;2005;131481.13;128209.0;134305;50885;2005;1;True
-1000;0.320634;334.989335;153356;50871;2252;151409.5;150322.0;153356;50871;2252;862;False

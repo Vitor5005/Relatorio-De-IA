@@ -1,73 +1,75 @@
 ===== INÍCIO DA EXECUÇÃO =====
-Começou em: 06/07/2026 21:49:32
-Arquivo de entrada: test.in
-Quantidade de itens disponíveis: 10000
-Capacidade da mochila: 50892
-Pasta de saída: resultados_algoritmo_genetico
+Começou em: 06/07/2026 22:57:14
+Arquivo: test_3.in
+Itens disponíveis: 1000
+Capacidade: 42204
+População: 100
+Gerações: 1000
 
-Geração 100 | Tempo da geração: 0.3086s | Valor acumulado: 150541 | Peso acumulado: 50842/50892 | Itens selecionados: 2201 | Melhor global: 150541
-Geração 200 | Tempo da geração: 0.3403s | Valor acumulado: 151579 | Peso acumulado: 50890/50892 | Itens selecionados: 2207 | Melhor global: 151579
-Geração 300 | Tempo da geração: 0.3519s | Valor acumulado: 152093 | Peso acumulado: 50870/50892 | Itens selecionados: 2211 | Melhor global: 152093
-Geração 400 | Tempo da geração: 0.3366s | Valor acumulado: 152872 | Peso acumulado: 50886/50892 | Itens selecionados: 2243 | Melhor global: 152872
-Geração 500 | Tempo da geração: 0.3339s | Valor acumulado: 152872 | Peso acumulado: 50886/50892 | Itens selecionados: 2243 | Melhor global: 152872
-Geração 600 | Tempo da geração: 0.3630s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
-Geração 700 | Tempo da geração: 0.3426s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
-Geração 800 | Tempo da geração: 0.3250s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
-Geração 900 | Tempo da geração: 0.3224s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
-Geração 1000 | Tempo da geração: 0.3206s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
+===== ACOMPANHAMENTO A CADA 100 GERAÇÕES =====
+Geração 0100/1000 | Tempo geração: 0.026016s | Melhor da geração: valor=49580, peso=42200/42204, itens=738 | Melhor global: valor=49580, geração=91
+Geração 0200/1000 | Tempo geração: 0.028413s | Melhor da geração: valor=49657, peso=42197/42204, itens=746 | Melhor global: valor=49657, geração=199
+Geração 0300/1000 | Tempo geração: 0.024658s | Melhor da geração: valor=49687, peso=42187/42204, itens=750 | Melhor global: valor=49687, geração=266
+Geração 0400/1000 | Tempo geração: 0.024954s | Melhor da geração: valor=49706, peso=42196/42204, itens=751 | Melhor global: valor=49706, geração=321
+Geração 0500/1000 | Tempo geração: 0.026195s | Melhor da geração: valor=49762, peso=42202/42204, itens=756 | Melhor global: valor=49762, geração=460
+Geração 0600/1000 | Tempo geração: 0.028304s | Melhor da geração: valor=49762, peso=42202/42204, itens=756 | Melhor global: valor=49762, geração=460
+Geração 0700/1000 | Tempo geração: 0.027716s | Melhor da geração: valor=49762, peso=42202/42204, itens=756 | Melhor global: valor=49762, geração=460
+Geração 0800/1000 | Tempo geração: 0.024058s | Melhor da geração: valor=49762, peso=42202/42204, itens=756 | Melhor global: valor=49762, geração=460
+Geração 0900/1000 | Tempo geração: 0.026859s | Melhor da geração: valor=49764, peso=42204/42204, itens=756 | Melhor global: valor=49764, geração=807
+Geração 1000/1000 | Tempo geração: 0.026560s | Melhor da geração: valor=49771, peso=42201/42204, itens=757 | Melhor global: valor=49771, geração=965
 CSV salvo em: resultados_algoritmo_genetico\csv\analise_geracoes_ag.csv
+CSV com tempo de cada geração salvo em: resultados_algoritmo_genetico\csv\tempos_por_geracao_ag.csv
+TXT com tempo de cada geração salvo em: resultados_algoritmo_genetico\txt\tempos_por_geracao_ag.txt
 Arquivo com itens escolhidos salvo em: resultados_algoritmo_genetico\txt\itens_escolhidos_ag.txt
 CSV salvo em: resultados_algoritmo_genetico\csv\analise_geracoes_ag_escala_100.csv
-CSV salvo em: resultados_algoritmo_genetico\csv\analise_geracoes_ag_escala_1000.csv
 CSV salvo em: resultados_algoritmo_genetico\csv\resumo_blocos_100_geracoes.csv
-CSV salvo em: resultados_algoritmo_genetico\csv\resumo_blocos_1000_geracoes.csv
+Gráficos de 1000 em 1000 não foram gerados porque há poucas gerações para essa escala.
+Gráficos por blocos de 1000 não foram gerados porque haveria apenas um bloco útil.
 
 ===== GRÁFICOS GERADOS =====
-Gráficos completos: resultados_algoritmo_genetico\graficos\completo
-Gráficos em escala de 100 em 100: resultados_algoritmo_genetico\graficos\escala_100
-Gráficos em escala de 1000 em 1000: resultados_algoritmo_genetico\graficos\escala_1000
-Gráficos de resumo por blocos: resultados_algoritmo_genetico\graficos\resumo_blocos
+Gráficos completos: resultados_algoritmo_genetico\graficos_corrigidos\completo
+Gráficos de 100 em 100: resultados_algoritmo_genetico\graficos_corrigidos\escala_100
+Gráficos por blocos de 100: resultados_algoritmo_genetico\graficos_corrigidos\resumo_blocos
 
 ===== RESUMO FINAL DA EXECUÇÃO =====
-Arquivo de entrada: test.in
-Quantidade de itens disponíveis: 10000
-Capacidade da mochila: 50892
+Arquivo de entrada: test_3.in
+Itens disponíveis: 1000
+Capacidade da mochila: 42204
 
-===== MELHOR SOLUÇÃO GLOBAL ENCONTRADA =====
-Valor acumulado dos itens escolhidos: 153356
-Peso acumulado dos itens escolhidos: 50871/50892
-Quantidade de itens escolhidos: 2252
-Geração em que apareceu: 862
-Quantidade total de melhorias globais: 74
-Solução válida: o peso está dentro da capacidade.
+===== MELHOR SOLUÇÃO GLOBAL =====
+Valor acumulado: 49771
+Peso acumulado: 42201/42204
+Itens selecionados: 757
+Geração em que apareceu: 965
+Melhorias globais encontradas: 71
+Status: solução válida
 
-===== TEMPO DE EXECUÇÃO =====
-Começou em: 06/07/2026 21:49:32
-Terminou em: 06/07/2026 21:55:07
-Tempo total: 334.99 segundos
-Tempo médio por geração: 0.334989 segundos
-Menor tempo de geração: 0.224889 segundos
-Maior tempo de geração: 0.526298 segundos
+===== TEMPO =====
+Tempo total do algoritmo: 28.866634 segundos
+Tempo médio por geração: 0.028760 segundos
+Menor tempo de geração: 0.023448 segundos
+Maior tempo de geração: 0.116621 segundos
+Tempo total estimado das gerações: 28.759642 segundos
+Tempo gasto em callbacks/logs: 0.106550 segundos
 
 ===== CONFIGURAÇÕES UTILIZADAS =====
 Número de gerações: 1000
 Tamanho da população: 100
-Quantidade de pais para cruzamento: 20
-Taxa de mutação (% genes): 2
-Tipo de seleção: sss
-Tipo de cruzamento: single_point
+Pais para cruzamento: 20
+Mutação: 2% dos genes
+Seleção: sss
+Cruzamento: single_point
 Tipo de mutação: random
 Semente aleatória: 1
 
-===== ARQUIVOS E PASTAS GERADOS =====
-- Saída principal: resultados_algoritmo_genetico\txt\saida_algoritmo_genetico.txt
-- Itens escolhidos: resultados_algoritmo_genetico\txt\itens_escolhidos_ag.txt
-- CSV completo: resultados_algoritmo_genetico\csv\analise_geracoes_ag.csv
-- CSV escala 100: resultados_algoritmo_genetico\csv\analise_geracoes_ag_escala_100.csv
-- CSV escala 1000: resultados_algoritmo_genetico\csv\analise_geracoes_ag_escala_1000.csv
-- CSV resumo blocos 100: resultados_algoritmo_genetico\csv\resumo_blocos_100_geracoes.csv
-- CSV resumo blocos 1000: resultados_algoritmo_genetico\csv\resumo_blocos_1000_geracoes.csv
-- Gráficos completos: resultados_algoritmo_genetico\graficos\completo
-- Gráficos escala 100: resultados_algoritmo_genetico\graficos\escala_100
-- Gráficos escala 1000: resultados_algoritmo_genetico\graficos\escala_1000
-- Gráficos resumo por blocos: resultados_algoritmo_genetico\graficos\resumo_blocos
+===== ARQUIVOS GERADOS =====
+Saída principal: resultados_algoritmo_genetico\txt\saida_algoritmo_genetico.txt
+Itens escolhidos: resultados_algoritmo_genetico\txt\itens_escolhidos_ag.txt
+CSV completo: resultados_algoritmo_genetico\csv\analise_geracoes_ag.csv
+CSV tempos por geração: resultados_algoritmo_genetico\csv\tempos_por_geracao_ag.csv
+TXT tempos por geração: resultados_algoritmo_genetico\txt\tempos_por_geracao_ag.txt
+CSV escala 100: resultados_algoritmo_genetico\csv\analise_geracoes_ag_escala_100.csv
+CSV resumo blocos 100: resultados_algoritmo_genetico\csv\resumo_blocos_100_geracoes.csv
+Gráficos completos: resultados_algoritmo_genetico\graficos_corrigidos\completo
+Gráficos escala 100: resultados_algoritmo_genetico\graficos_corrigidos\escala_100
+Gráficos por blocos: resultados_algoritmo_genetico\graficos_corrigidos\resumo_blocos
