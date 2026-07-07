@@ -1,110 +1,20 @@
 ===== INÍCIO DA EXECUÇÃO =====
-Começou em: 06/07/2026 20:35:15
+Começou em: 06/07/2026 21:49:32
 Arquivo de entrada: test.in
 Quantidade de itens disponíveis: 10000
 Capacidade da mochila: 50892
 Pasta de saída: resultados_algoritmo_genetico
 
-Geração 100 | Tempo da geração: 0.3623s | Valor acumulado: 150541 | Peso acumulado: 50842/50892 | Itens selecionados: 2201 | Melhor global: 150541
-Geração 200 | Tempo da geração: 0.3047s | Valor acumulado: 151579 | Peso acumulado: 50890/50892 | Itens selecionados: 2207 | Melhor global: 151579
-Geração 300 | Tempo da geração: 0.3295s | Valor acumulado: 152093 | Peso acumulado: 50870/50892 | Itens selecionados: 2211 | Melhor global: 152093
-Geração 400 | Tempo da geração: 0.2967s | Valor acumulado: 152872 | Peso acumulado: 50886/50892 | Itens selecionados: 2243 | Melhor global: 152872
-Geração 500 | Tempo da geração: 0.2978s | Valor acumulado: 152872 | Peso acumulado: 50886/50892 | Itens selecionados: 2243 | Melhor global: 152872
-Geração 600 | Tempo da geração: 0.3420s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
-Geração 700 | Tempo da geração: 0.3178s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
-Geração 800 | Tempo da geração: 0.2986s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
-Geração 900 | Tempo da geração: 0.3398s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
-Geração 1000 | Tempo da geração: 0.3731s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
-Geração 1100 | Tempo da geração: 0.3193s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
-Geração 1200 | Tempo da geração: 0.3707s | Valor acumulado: 153465 | Peso acumulado: 50861/50892 | Itens selecionados: 2257 | Melhor global: 153465
-Geração 1300 | Tempo da geração: 0.3940s | Valor acumulado: 153465 | Peso acumulado: 50861/50892 | Itens selecionados: 2257 | Melhor global: 153465
-Geração 1400 | Tempo da geração: 0.4165s | Valor acumulado: 153523 | Peso acumulado: 50874/50892 | Itens selecionados: 2255 | Melhor global: 153523
-Geração 1500 | Tempo da geração: 0.3437s | Valor acumulado: 153719 | Peso acumulado: 50860/50892 | Itens selecionados: 2248 | Melhor global: 153719
-Geração 1600 | Tempo da geração: 0.3366s | Valor acumulado: 154414 | Peso acumulado: 50833/50892 | Itens selecionados: 2252 | Melhor global: 154414
-Geração 1700 | Tempo da geração: 0.3737s | Valor acumulado: 154414 | Peso acumulado: 50833/50892 | Itens selecionados: 2252 | Melhor global: 154414
-Geração 1800 | Tempo da geração: 0.3499s | Valor acumulado: 154414 | Peso acumulado: 50833/50892 | Itens selecionados: 2252 | Melhor global: 154414
-Geração 1900 | Tempo da geração: 0.3584s | Valor acumulado: 154700 | Peso acumulado: 50846/50892 | Itens selecionados: 2261 | Melhor global: 154700
-Geração 2000 | Tempo da geração: 0.3570s | Valor acumulado: 154700 | Peso acumulado: 50846/50892 | Itens selecionados: 2261 | Melhor global: 154700
-Geração 2100 | Tempo da geração: 0.3768s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2200 | Tempo da geração: 0.3539s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2300 | Tempo da geração: 0.3932s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2400 | Tempo da geração: 0.3805s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2500 | Tempo da geração: 0.3382s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2600 | Tempo da geração: 0.3497s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2700 | Tempo da geração: 0.3662s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2800 | Tempo da geração: 0.3485s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 2900 | Tempo da geração: 0.3461s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 3000 | Tempo da geração: 0.3527s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 3100 | Tempo da geração: 0.3964s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 3200 | Tempo da geração: 0.4188s | Valor acumulado: 155005 | Peso acumulado: 50869/50892 | Itens selecionados: 2264 | Melhor global: 155005
-Geração 3300 | Tempo da geração: 0.3551s | Valor acumulado: 155010 | Peso acumulado: 50845/50892 | Itens selecionados: 2272 | Melhor global: 155010
-Geração 3400 | Tempo da geração: 0.4297s | Valor acumulado: 155010 | Peso acumulado: 50845/50892 | Itens selecionados: 2272 | Melhor global: 155010
-Geração 3500 | Tempo da geração: 0.4484s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 3600 | Tempo da geração: 0.4849s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 3700 | Tempo da geração: 0.3626s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 3800 | Tempo da geração: 0.3795s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 3900 | Tempo da geração: 0.3843s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 4000 | Tempo da geração: 0.3925s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 4100 | Tempo da geração: 0.3606s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 4200 | Tempo da geração: 0.3466s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 4300 | Tempo da geração: 0.4163s | Valor acumulado: 155045 | Peso acumulado: 50889/50892 | Itens selecionados: 2273 | Melhor global: 155045
-Geração 4400 | Tempo da geração: 0.3924s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 4500 | Tempo da geração: 0.4150s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 4600 | Tempo da geração: 0.3493s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 4700 | Tempo da geração: 0.3792s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 4800 | Tempo da geração: 0.3897s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 4900 | Tempo da geração: 0.3736s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5000 | Tempo da geração: 0.4401s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5100 | Tempo da geração: 0.5080s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5200 | Tempo da geração: 0.4522s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5300 | Tempo da geração: 0.3800s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5400 | Tempo da geração: 0.4275s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5500 | Tempo da geração: 0.5625s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5600 | Tempo da geração: 0.3702s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5700 | Tempo da geração: 0.3933s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5800 | Tempo da geração: 0.5326s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 5900 | Tempo da geração: 0.3534s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 6000 | Tempo da geração: 0.3550s | Valor acumulado: 155086 | Peso acumulado: 50842/50892 | Itens selecionados: 2274 | Melhor global: 155086
-Geração 6100 | Tempo da geração: 0.4199s | Valor acumulado: 155201 | Peso acumulado: 50844/50892 | Itens selecionados: 2276 | Melhor global: 155201
-Geração 6200 | Tempo da geração: 0.4504s | Valor acumulado: 155201 | Peso acumulado: 50844/50892 | Itens selecionados: 2276 | Melhor global: 155201
-Geração 6300 | Tempo da geração: 0.6092s | Valor acumulado: 155201 | Peso acumulado: 50844/50892 | Itens selecionados: 2276 | Melhor global: 155201
-Geração 6400 | Tempo da geração: 0.5538s | Valor acumulado: 155226 | Peso acumulado: 50865/50892 | Itens selecionados: 2275 | Melhor global: 155226
-Geração 6500 | Tempo da geração: 0.4182s | Valor acumulado: 155226 | Peso acumulado: 50865/50892 | Itens selecionados: 2275 | Melhor global: 155226
-Geração 6600 | Tempo da geração: 0.3625s | Valor acumulado: 155226 | Peso acumulado: 50865/50892 | Itens selecionados: 2275 | Melhor global: 155226
-Geração 6700 | Tempo da geração: 0.4222s | Valor acumulado: 155256 | Peso acumulado: 50885/50892 | Itens selecionados: 2274 | Melhor global: 155256
-Geração 6800 | Tempo da geração: 0.3875s | Valor acumulado: 155256 | Peso acumulado: 50885/50892 | Itens selecionados: 2274 | Melhor global: 155256
-Geração 6900 | Tempo da geração: 0.4542s | Valor acumulado: 155256 | Peso acumulado: 50885/50892 | Itens selecionados: 2274 | Melhor global: 155256
-Geração 7000 | Tempo da geração: 0.3878s | Valor acumulado: 155256 | Peso acumulado: 50885/50892 | Itens selecionados: 2274 | Melhor global: 155256
-Geração 7100 | Tempo da geração: 0.5072s | Valor acumulado: 155594 | Peso acumulado: 50862/50892 | Itens selecionados: 2275 | Melhor global: 155594
-Geração 7200 | Tempo da geração: 0.3876s | Valor acumulado: 155594 | Peso acumulado: 50862/50892 | Itens selecionados: 2275 | Melhor global: 155594
-Geração 7300 | Tempo da geração: 0.4268s | Valor acumulado: 155594 | Peso acumulado: 50862/50892 | Itens selecionados: 2275 | Melhor global: 155594
-Geração 7400 | Tempo da geração: 0.3708s | Valor acumulado: 155594 | Peso acumulado: 50862/50892 | Itens selecionados: 2275 | Melhor global: 155594
-Geração 7500 | Tempo da geração: 0.4389s | Valor acumulado: 155597 | Peso acumulado: 50886/50892 | Itens selecionados: 2279 | Melhor global: 155597
-Geração 7600 | Tempo da geração: 0.4705s | Valor acumulado: 155597 | Peso acumulado: 50886/50892 | Itens selecionados: 2279 | Melhor global: 155597
-Geração 7700 | Tempo da geração: 0.4542s | Valor acumulado: 155597 | Peso acumulado: 50886/50892 | Itens selecionados: 2279 | Melhor global: 155597
-Geração 7800 | Tempo da geração: 0.3628s | Valor acumulado: 155597 | Peso acumulado: 50886/50892 | Itens selecionados: 2279 | Melhor global: 155597
-Geração 7900 | Tempo da geração: 0.3947s | Valor acumulado: 155657 | Peso acumulado: 50848/50892 | Itens selecionados: 2279 | Melhor global: 155657
-Geração 8000 | Tempo da geração: 0.4593s | Valor acumulado: 155657 | Peso acumulado: 50848/50892 | Itens selecionados: 2279 | Melhor global: 155657
-Geração 8100 | Tempo da geração: 0.4019s | Valor acumulado: 155657 | Peso acumulado: 50848/50892 | Itens selecionados: 2279 | Melhor global: 155657
-Geração 8200 | Tempo da geração: 0.4546s | Valor acumulado: 155657 | Peso acumulado: 50848/50892 | Itens selecionados: 2279 | Melhor global: 155657
-Geração 8300 | Tempo da geração: 0.4203s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 8400 | Tempo da geração: 0.3614s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 8500 | Tempo da geração: 0.3928s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 8600 | Tempo da geração: 0.4305s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 8700 | Tempo da geração: 0.3857s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 8800 | Tempo da geração: 0.3523s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 8900 | Tempo da geração: 0.5065s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9000 | Tempo da geração: 0.3739s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9100 | Tempo da geração: 0.3809s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9200 | Tempo da geração: 0.4086s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9300 | Tempo da geração: 0.4096s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9400 | Tempo da geração: 0.4165s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9500 | Tempo da geração: 0.4184s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9600 | Tempo da geração: 0.3715s | Valor acumulado: 155658 | Peso acumulado: 50867/50892 | Itens selecionados: 2277 | Melhor global: 155658
-Geração 9700 | Tempo da geração: 0.3605s | Valor acumulado: 155678 | Peso acumulado: 50871/50892 | Itens selecionados: 2279 | Melhor global: 155678
-Geração 9800 | Tempo da geração: 0.3776s | Valor acumulado: 155678 | Peso acumulado: 50871/50892 | Itens selecionados: 2279 | Melhor global: 155678
-Geração 9900 | Tempo da geração: 0.3743s | Valor acumulado: 155678 | Peso acumulado: 50871/50892 | Itens selecionados: 2279 | Melhor global: 155678
-Geração 10000 | Tempo da geração: 0.3723s | Valor acumulado: 155678 | Peso acumulado: 50871/50892 | Itens selecionados: 2279 | Melhor global: 155678
+Geração 100 | Tempo da geração: 0.3086s | Valor acumulado: 150541 | Peso acumulado: 50842/50892 | Itens selecionados: 2201 | Melhor global: 150541
+Geração 200 | Tempo da geração: 0.3403s | Valor acumulado: 151579 | Peso acumulado: 50890/50892 | Itens selecionados: 2207 | Melhor global: 151579
+Geração 300 | Tempo da geração: 0.3519s | Valor acumulado: 152093 | Peso acumulado: 50870/50892 | Itens selecionados: 2211 | Melhor global: 152093
+Geração 400 | Tempo da geração: 0.3366s | Valor acumulado: 152872 | Peso acumulado: 50886/50892 | Itens selecionados: 2243 | Melhor global: 152872
+Geração 500 | Tempo da geração: 0.3339s | Valor acumulado: 152872 | Peso acumulado: 50886/50892 | Itens selecionados: 2243 | Melhor global: 152872
+Geração 600 | Tempo da geração: 0.3630s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
+Geração 700 | Tempo da geração: 0.3426s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
+Geração 800 | Tempo da geração: 0.3250s | Valor acumulado: 153289 | Peso acumulado: 50840/50892 | Itens selecionados: 2255 | Melhor global: 153289
+Geração 900 | Tempo da geração: 0.3224s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
+Geração 1000 | Tempo da geração: 0.3206s | Valor acumulado: 153356 | Peso acumulado: 50871/50892 | Itens selecionados: 2252 | Melhor global: 153356
 CSV salvo em: resultados_algoritmo_genetico\csv\analise_geracoes_ag.csv
 Arquivo com itens escolhidos salvo em: resultados_algoritmo_genetico\txt\itens_escolhidos_ag.txt
 CSV salvo em: resultados_algoritmo_genetico\csv\analise_geracoes_ag_escala_100.csv
@@ -124,23 +34,23 @@ Quantidade de itens disponíveis: 10000
 Capacidade da mochila: 50892
 
 ===== MELHOR SOLUÇÃO GLOBAL ENCONTRADA =====
-Valor acumulado dos itens escolhidos: 155678
+Valor acumulado dos itens escolhidos: 153356
 Peso acumulado dos itens escolhidos: 50871/50892
-Quantidade de itens escolhidos: 2279
-Geração em que apareceu: 9669
-Quantidade total de melhorias globais: 98
+Quantidade de itens escolhidos: 2252
+Geração em que apareceu: 862
+Quantidade total de melhorias globais: 74
 Solução válida: o peso está dentro da capacidade.
 
 ===== TEMPO DE EXECUÇÃO =====
-Começou em: 06/07/2026 20:35:15
-Terminou em: 06/07/2026 21:41:39
-Tempo total: 3984.12 segundos
-Tempo médio por geração: 0.398412 segundos
-Menor tempo de geração: 0.217872 segundos
-Maior tempo de geração: 1.231666 segundos
+Começou em: 06/07/2026 21:49:32
+Terminou em: 06/07/2026 21:55:07
+Tempo total: 334.99 segundos
+Tempo médio por geração: 0.334989 segundos
+Menor tempo de geração: 0.224889 segundos
+Maior tempo de geração: 0.526298 segundos
 
 ===== CONFIGURAÇÕES UTILIZADAS =====
-Número de gerações: 10000
+Número de gerações: 1000
 Tamanho da população: 100
 Quantidade de pais para cruzamento: 20
 Taxa de mutação (% genes): 2
