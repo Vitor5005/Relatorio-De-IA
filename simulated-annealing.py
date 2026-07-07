@@ -520,7 +520,7 @@ if __name__ == "__main__":
     # Execução única: carrega o test.in e roda o SA, salvando o log no
     # formato "Ciclo | Temp | Melhor Custo | Tempo Decorrido" em um .txt
     # ---------------------------------------------------------------------
-    test_inst = load_instance_pisinger_format("./test_dificil.in")
+    test_inst = load_instance_pisinger_format("./test_3.in")
     print(f"Instância test.in: n={test_inst.n}, capacidade={test_inst.capacity}\n")
 
     result, log = simulated_annealing_verbose(
