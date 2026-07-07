@@ -410,6 +410,7 @@ def simulated_annealing_verbose(
     initial_method: str = "GISP",
     seed: Optional[int] = None,
     print_every: int = 100,
+    output_path: Optional[str] = None,
 ):
     """Versão do SA que imprime o progresso no formato:
 
@@ -422,6 +423,10 @@ def simulated_annealing_verbose(
     externo `while T >= T_min`), da mesma forma que uma "Geração" no GA
     corresponde a uma população inteira avaliada. Dentro de cada ciclo,
     `max_iteration` vizinhos são avaliados antes de resfriar (T *= alpha).
+
+    Se `output_path` for informado, todas as linhas impressas também são
+    gravadas nesse arquivo .txt (mesmo formato exibido no terminal),
+    permitindo reproduzir o log_execucao_XX.txt pedido pelo professor.
 
     IMPORTANTE: o KP01 é um problema de MAXIMIZAÇÃO (queremos o MAIOR lucro
     possível), então "Melhor Custo" aqui tende a CRESCER ao longo dos ciclos
@@ -442,7 +447,15 @@ def simulated_annealing_verbose(
     # feitas ao longo de toda a execução (ciclos de resfriamento x iterações).
     n_cycles_estimate = max(1, int(math.log(T_min / T_max) / math.log(alpha)))
     total_evaluations = n_cycles_estimate * max_iteration
-    print(f"Iniciando SA (Orçamento: {total_evaluations} avaliações)...")
+
+    out_file = open(output_path, "w") if output_path is not None else None
+
+    def emit(line: str):
+        print(line)
+        if out_file is not None:
+            out_file.write(line + "\n")
+
+    emit(f"Iniciando SA (Orçamento: {total_evaluations} avaliações)...")
 
     t_start = time.time()
     log: List[dict] = []
@@ -475,7 +488,7 @@ def simulated_annealing_verbose(
         })
 
         if cycle % print_every == 0:
-            print(
+            emit(
                 f"Ciclo {cycle:04d} | Temp: {T:10.2f} | "
                 f"Melhor Custo: {best_fit:.1f} | Tempo Decorrido: {elapsed:.2f}s"
             )
@@ -486,10 +499,13 @@ def simulated_annealing_verbose(
     # garante que o último ciclo também apareça no log/print, mesmo que não
     # seja múltiplo de print_every
     elapsed = time.time() - t_start
-    print(
+    emit(
         f"Ciclo {cycle - 1:04d} | Temp: {T / alpha:10.2f} | "
         f"Melhor Custo: {best_fit:.1f} | Tempo Decorrido: {elapsed:.2f}s  (final)"
     )
+
+    if out_file is not None:
+        out_file.close()
 
     result = SAResult(best_solution=best_sol, best_fitness=best_fit)
     return result, log
@@ -500,102 +516,30 @@ def simulated_annealing_verbose(
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    # Instância pequena "de bolso" para checar rapidamente que está funcionando
-    weights = [2, 3, 4, 5, 9]
-    profits = [3, 4, 5, 8, 10]
-    capacity = 10
-    inst = KnapsackInstance(weights, profits, capacity)
-
-    result = simulated_annealing(
-        inst,
-        T_max=1000,
-        T_min=0.001,
-        alpha=0.95,
-        max_iteration=50,
-        m=1,
-        initial_method="GISP",
-        seed=42,
-    )
-
-    print("Melhor solução:", result.best_solution)
-    print("Melhor valor (fitness):", result.best_fitness)
-    print("Peso total:", total_weight(result.best_solution, inst), "/", capacity)
-
-    # Instância maior e aleatória, para testes de calibração de parâmetros
-    big_inst = KnapsackInstance.random_instance(
-        n=200, capacity_ratio=0.75, correlation="uncorrelated", seed=1
-    )
-    result_big = simulated_annealing(big_inst, seed=1)
-    print("\nInstância aleatória (n=200):")
-    print("Melhor valor encontrado:", result_big.best_fitness)
-
     # ---------------------------------------------------------------------
-    # Carregando a instância real do arquivo test.in (formato Pisinger)
+    # Execução única: carrega o test.in e roda o SA, salvando o log no
+    # formato "Ciclo | Temp | Melhor Custo | Tempo Decorrido" em um .txt
     # ---------------------------------------------------------------------
-    import time
+    test_inst = load_instance_pisinger_format("./test_dificil.in")
+    print(f"Instância test.in: n={test_inst.n}, capacidade={test_inst.capacity}\n")
 
-    # test_inst = KnapsackInstance.random_instance(200)
-    test_inst = load_instance_pisinger_format("./test.in")
-    print(f"\nInstância test.in: n={test_inst.n}, capacidade={test_inst.capacity}")
-
-    t0 = time.time()
-    result_test = simulated_annealing(
+    result, log = simulated_annealing_verbose(
         test_inst,
-        T_max=200,
+        T_max=10,
         T_min=0.001,
         alpha=0.95,
         max_iteration=60,
-        m=4,
-        initial_method="GISP",
-        seed=1,
-    )
-    elapsed = time.time() - t0
-
-    print("\nMelhor valor encontrado:", result_test.best_fitness)
-    print(
-        "Peso total usado:",
-        total_weight(result_test.best_solution, test_inst),
-        "/",
-        test_inst.capacity,
-    )
-    print(f"Tempo de execução: {elapsed:.2f}s")
-
-    # ---------------------------------------------------------------------
-    # Gerando o LOG completo de execução (todas as iterações), salvo em CSV
-    # ---------------------------------------------------------------------
-    result_logged, log = simulated_annealing_with_log(
-        test_inst,
-        T_max=200,
-        T_min=0.001,
-        alpha=0.95,
-        max_iteration=60,
-        m=4,
-        initial_method="GISP",
-        seed=1,
-        log_path="sa_log.csv",
-    )
-
-    print(f"\nLog gerado com {len(log)} passos (salvo em sa_log.csv)")
-    print("Melhor valor (via versão com log):", result_logged.best_fitness)
-    print("\nPrimeiros 3 passos do log:")
-    for row in log[:3]:
-        print(row)
-    print("\nÚltimos 3 passos do log:")
-    for row in log[-3:]:
-        print(row)
-
-    # ---------------------------------------------------------------------
-    # Versão "verbose" (formato Ciclo/Temp/Melhor Custo/Tempo Decorrido)
-    # ---------------------------------------------------------------------
-    print("\n" + "=" * 70)
-    result_verbose, cycles_log = simulated_annealing_verbose(
-        test_inst,
-        T_max=200,
-        T_min=0.001,
-        alpha=0.95,
-        max_iteration=60,
-        m=4,
+        m=3,
         initial_method="GISP",
         seed=1,
         print_every=10,
+        output_path="log_execucao_01.txt",
+    )
+
+    print(f"\nMelhor solução encontrada (fitness): {result.best_fitness}")
+    print(
+        "Peso total usado:",
+        total_weight(result.best_solution, test_inst),
+        "/",
+        test_inst.capacity,
     )
