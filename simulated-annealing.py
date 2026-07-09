@@ -411,6 +411,7 @@ def simulated_annealing_verbose(
     seed: Optional[int] = None,
     print_every: int = 100,
     output_path: Optional[str] = None,
+    verbose: bool = True,
 ):
     """Versão do SA que imprime o progresso no formato:
 
@@ -427,6 +428,15 @@ def simulated_annealing_verbose(
     Se `output_path` for informado, todas as linhas impressas também são
     gravadas nesse arquivo .txt (mesmo formato exibido no terminal),
     permitindo reproduzir o log_execucao_XX.txt pedido pelo professor.
+
+    Se `verbose=False`, nada é impresso no terminal (útil para rodar a
+    função várias vezes em lote, como na comparação de configurações feita
+    por `plot_time_per_cycle`), mas o log continua sendo retornado
+    normalmente (e gravado em `output_path`, se informado).
+
+    Cada item de `log` agora inclui também `cycle_duration`: o tempo (em
+    segundos) gasto especificamente NAQUELE ciclo (diferente de
+    `elapsed_time`, que é o tempo acumulado desde o início da execução).
 
     IMPORTANTE: o KP01 é um problema de MAXIMIZAÇÃO (queremos o MAIOR lucro
     possível), então "Melhor Custo" aqui tende a CRESCER ao longo dos ciclos
@@ -451,7 +461,8 @@ def simulated_annealing_verbose(
     out_file = open(output_path, "w") if output_path is not None else None
 
     def emit(line: str):
-        print(line)
+        if verbose:
+            print(line)
         if out_file is not None:
             out_file.write(line + "\n")
 
@@ -460,6 +471,7 @@ def simulated_annealing_verbose(
     t_start = time.time()
     log: List[dict] = []
     cycle = 0
+    previous_elapsed = 0.0
 
     T = T_max
     while T >= T_min:
@@ -485,7 +497,9 @@ def simulated_annealing_verbose(
             "temperature": T,
             "best_cost": best_fit,
             "elapsed_time": elapsed,
+            "cycle_duration": elapsed - previous_elapsed,
         })
+        previous_elapsed = elapsed
 
         if cycle % print_every == 0:
             emit(
@@ -509,6 +523,121 @@ def simulated_annealing_verbose(
 
     result = SAResult(best_solution=best_sol, best_fitness=best_fit)
     return result, log
+
+
+# ---------------------------------------------------------------------------
+# 8. Gráfico: tempo gasto por ciclo, comparando configurações
+# ---------------------------------------------------------------------------
+
+def plot_convergence(
+    inst: KnapsackInstance,
+    configs: List[dict],
+    labels: Optional[List[str]] = None,
+    output_path: str = "convergencia.png",
+    csv_prefix: str = "log_config",
+):
+    """Gera a CURVA DE CONVERGÊNCIA (Melhor Fitness x Número de Avaliações)
+    comparando várias configurações de parâmetros do SA, rodadas sobre a
+    mesma instância `inst`. Além do gráfico, também salva UM ARQUIVO CSV
+    POR CONFIGURAÇÃO, com todos os dados de cada avaliação (step,
+    temperature, current_fitness, candidate_fitness, delta,
+    acceptance_prob, accepted, best_fitness_so_far).
+
+    Diferente de uma versão baseada em "Ciclo" (nível de temperatura), aqui
+    o eixo X é o NÚMERO DE AVALIAÇÕES DA FUNÇÃO OBJETIVO (uma por vizinho
+    testado) -- a mesma unidade usada no log do GA ("Orçamento: N
+    avaliações"), o que torna esse gráfico diretamente comparável entre SA
+    e GA, mesmo sendo algoritmos estruturalmente diferentes (ciclo do SA e
+    geração do GA não representam a mesma quantidade de trabalho, mas uma
+    avaliação de fitness é a mesma unidade atômica nos dois).
+
+    Cada curva também tem marcado (linha vertical tracejada + anotação) o
+    ponto exato em que a configuração encontrou sua melhor solução --
+    permitindo diferenciar "quantas avaliações o algoritmo REALMENTE
+    precisou" do "quantas avaliações ele gastou no total" (orçamento).
+
+    Parâmetros:
+        configs: lista de dicts, cada um com os parâmetros a passar para
+                 `simulated_annealing_with_log` (T_max, T_min, alpha,
+                 max_iteration, m, initial_method, seed, ...).
+        labels:  rótulos para a legenda do gráfico (um por configuração).
+                 Se None, usa "Config 1", "Config 2", etc.
+        output_path: caminho do arquivo de imagem (.png) a ser salvo.
+        csv_prefix: prefixo dos arquivos CSV gerados (um por configuração).
+                    Ex.: "log_config" gera "log_config_1.csv",
+                    "log_config_2.csv", "log_config_3.csv", etc.
+
+    Exemplo de uso (com as 3 configurações do ranking do relatório):
+
+        configs = [
+            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=2, seed=1),
+            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=4, seed=1),
+            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=5, seed=1),
+        ]
+        labels = ["1º lugar (m=2)", "2º lugar (m=4)", "3º lugar (m=5)"]
+
+        plot_convergence(test_inst, configs, labels)
+        # Gera: convergencia.png, log_config_1.csv, log_config_2.csv, log_config_3.csv
+    """
+    import csv
+    import matplotlib
+    matplotlib.use("Agg")  # backend sem interface gráfica (salva direto em arquivo)
+    import matplotlib.pyplot as plt
+
+    if labels is None:
+        labels = [f"Config {i + 1}" for i in range(len(configs))]
+
+    plt.figure(figsize=(10, 6))
+
+    linestyles = ["-", "--", ":", "-."]
+    colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+
+    for i, (cfg, label) in enumerate(zip(configs, labels)):
+        params = dict(cfg)
+        params.setdefault("initial_method", "GISP")
+        _, log = simulated_annealing_with_log(inst, **params)
+
+        # Salva o log COMPLETO dessa configuração em um CSV próprio
+        csv_path = f"{csv_prefix}_{i + 1}.csv"
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=list(log[0].keys()))
+            writer.writeheader()
+            writer.writerows(log)
+        print(f"CSV salvo em: {csv_path} ({len(log)} linhas) -- {label}")
+
+        evaluations = [row["step"] for row in log]
+        best_so_far = [row["best_fitness_so_far"] for row in log]
+
+        # avaliação em que a melhor solução foi encontrada PELA ÚLTIMA VEZ
+        # (isto é, a partir da qual best_fitness_so_far não muda mais)
+        final_best = best_so_far[-1]
+        eval_of_best = next(
+            row["step"] for row in log if row["best_fitness_so_far"] == final_best
+        )
+
+        color = colors[i % len(colors)]
+
+        plt.plot(
+            evaluations,
+            best_so_far,
+            linestyle=linestyles[i % len(linestyles)],
+            linewidth=1.8,
+            alpha=0.85,
+            color=color,
+            label=f"{label} (melhor em {eval_of_best} avaliações)",
+        )
+        plt.axvline(x=eval_of_best, color=color, linestyle=":", linewidth=1, alpha=0.5)
+
+    plt.xlabel("Número de avaliações da função objetivo")
+    plt.ylabel("Melhor fitness encontrado até o momento")
+    plt.title("Curva de Convergência -- Melhor Fitness x Avaliações")
+    plt.legend()
+    plt.grid(True, linestyle="--", alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150)
+    plt.close()
+
+    print(f"Gráfico salvo em: {output_path}")
 
 
 # ---------------------------------------------------------------------------
@@ -543,3 +672,20 @@ if __name__ == "__main__":
         "/",
         test_inst.capacity,
     )
+
+    # ---------------------------------------------------------------------
+    # Gráfico: tempo gasto por ciclo, comparando as 3 melhores configurações
+    # (mesmas do ranking discutido no relatório)
+    # ---------------------------------------------------------------------
+    configs = [
+        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=2, seed=1),
+        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=4, seed=1),
+        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=5, seed=1),
+    ]
+    labels = [
+        "1º lugar (m=2)",
+        "2º lugar (m=4)",
+        "3º lugar (m=5)",
+    ]
+
+    plot_convergence(test_inst, configs, labels, output_path="convergencia.png")
