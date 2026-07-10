@@ -535,6 +535,8 @@ def plot_convergence(
     labels: Optional[List[str]] = None,
     output_path: str = "convergencia.png",
     csv_prefix: str = "log_config",
+    multiplos_testes: bool = False,
+    n_execucoes: int = 10,
 ):
     """Gera a CURVA DE CONVERGÊNCIA (Melhor Fitness x Número de Avaliações)
     comparando várias configurações de parâmetros do SA, rodadas sobre a
@@ -566,6 +568,21 @@ def plot_convergence(
         csv_prefix: prefixo dos arquivos CSV gerados (um por configuração).
                     Ex.: "log_config" gera "log_config_1.csv",
                     "log_config_2.csv", "log_config_3.csv", etc.
+        multiplos_testes: função True/False que controla quantas vezes cada
+                 configuração é executada:
+                     True  -> cada uma das configurações roda `n_execucoes`
+                              vezes (10 por padrão) e o gráfico/CSV são
+                              montados com a MÉDIA, ponto a ponto (por
+                              número de avaliação), do "melhor fitness até
+                              o momento" entre as execuções. Isso suaviza a
+                              aleatoriedade da seed e dá uma curva mais
+                              representativa do comportamento típico da
+                              configuração.
+                     False -> (comportamento original) cada configuração
+                              roda apenas UMA vez e o gráfico/CSV são
+                              montados diretamente com esses dados.
+        n_execucoes: quantidade de execuções por configuração quando
+                 `multiplos_testes=True` (ignorado se for False).
 
     Exemplo de uso (com as 3 configurações do ranking do relatório):
 
@@ -576,7 +593,12 @@ def plot_convergence(
         ]
         labels = ["1º lugar (m=2)", "2º lugar (m=4)", "3º lugar (m=5)"]
 
-        plot_convergence(test_inst, configs, labels)
+        # Uma execução por configuração (comportamento original):
+        plot_convergence(test_inst, configs, labels, multiplos_testes=False)
+
+        # Dez execuções por configuração, gráfico com a média:
+        plot_convergence(test_inst, configs, labels, multiplos_testes=True)
+
         # Gera: convergencia.png, log_config_1.csv, log_config_2.csv, log_config_3.csv
     """
     import csv
@@ -595,24 +617,81 @@ def plot_convergence(
     for i, (cfg, label) in enumerate(zip(configs, labels)):
         params = dict(cfg)
         params.setdefault("initial_method", "GISP")
-        _, log = simulated_annealing_with_log(inst, **params)
 
-        # Salva o log COMPLETO dessa configuração em um CSV próprio
-        csv_path = f"{csv_prefix}_{i + 1}.csv"
-        with open(csv_path, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=list(log[0].keys()))
-            writer.writeheader()
-            writer.writerows(log)
-        print(f"CSV salvo em: {csv_path} ({len(log)} linhas) -- {label}")
+        if multiplos_testes:
+            # ---------------------------------------------------------
+            # True: roda a configuração `n_execucoes` vezes (variando a
+            # seed a partir da seed base, se houver) e usa a MÉDIA do
+            # "melhor fitness até o momento", passo a passo, para montar
+            # a curva e o CSV. O número de passos (steps) é o mesmo em
+            # todas as execuções, pois depende só do cronograma de
+            # temperatura/iterações (T_max, T_min, alpha, max_iteration),
+            # não da seed -- por isso dá para fazer a média ponto a ponto.
+            # ---------------------------------------------------------
+            base_seed = params.pop("seed", None)
+            all_best_so_far: List[List[float]] = []
+            evaluations: Optional[List[int]] = None
 
-        evaluations = [row["step"] for row in log]
-        best_so_far = [row["best_fitness_so_far"] for row in log]
+            for run in range(n_execucoes):
+                run_params = dict(params)
+                run_params["seed"] = (base_seed + run) if base_seed is not None else None
+                _, log_run = simulated_annealing_with_log(inst, **run_params)
+
+                if evaluations is None:
+                    evaluations = [row["step"] for row in log_run]
+
+                all_best_so_far.append([row["best_fitness_so_far"] for row in log_run])
+
+            n_steps = len(evaluations)
+            best_so_far = [
+                sum(all_best_so_far[r][s] for r in range(n_execucoes)) / n_execucoes
+                for s in range(n_steps)
+            ]
+
+            # CSV: uma linha por step, com a média e o valor de cada execução
+            csv_path = f"{csv_prefix}_{i + 1}.csv"
+            with open(csv_path, "w", newline="") as f:
+                fieldnames = ["step", "best_fitness_media"] + [
+                    f"best_fitness_execucao_{r + 1}" for r in range(n_execucoes)
+                ]
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                for s in range(n_steps):
+                    row = {"step": evaluations[s], "best_fitness_media": best_so_far[s]}
+                    for r in range(n_execucoes):
+                        row[f"best_fitness_execucao_{r + 1}"] = all_best_so_far[r][s]
+                    writer.writerow(row)
+            print(
+                f"CSV salvo em: {csv_path} ({n_steps} linhas, média de "
+                f"{n_execucoes} execuções) -- {label}"
+            )
+
+            curve_label_suffix = f""
+
+        else:
+            # ---------------------------------------------------------
+            # False (comportamento original): roda a configuração UMA
+            # única vez e usa esses dados diretamente.
+            # ---------------------------------------------------------
+            _, log_run = simulated_annealing_with_log(inst, **params)
+
+            csv_path = f"{csv_prefix}_{i + 1}.csv"
+            with open(csv_path, "w", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=list(log_run[0].keys()))
+                writer.writeheader()
+                writer.writerows(log_run)
+            print(f"CSV salvo em: {csv_path} ({len(log_run)} linhas) -- {label}")
+
+            evaluations = [row["step"] for row in log_run]
+            best_so_far = [row["best_fitness_so_far"] for row in log_run]
+
+            curve_label_suffix = ""
 
         # avaliação em que a melhor solução foi encontrada PELA ÚLTIMA VEZ
-        # (isto é, a partir da qual best_fitness_so_far não muda mais)
+        # (isto é, a partir da qual best_so_far não muda mais)
         final_best = best_so_far[-1]
         eval_of_best = next(
-            row["step"] for row in log if row["best_fitness_so_far"] == final_best
+            evaluations[idx] for idx, v in enumerate(best_so_far) if v == final_best
         )
 
         color = colors[i % len(colors)]
@@ -624,13 +703,16 @@ def plot_convergence(
             linewidth=1.8,
             alpha=0.85,
             color=color,
-            label=f"{label} (melhor em {eval_of_best} avaliações)",
+            label=f"{label}{curve_label_suffix} (melhor em {eval_of_best} avaliações)",
         )
         plt.axvline(x=eval_of_best, color=color, linestyle=":", linewidth=1, alpha=0.5)
 
-    plt.xlabel("Número de avaliações da função objetivo")
-    plt.ylabel("Melhor fitness encontrado até o momento")
-    plt.title("Curva de Convergência -- Melhor Fitness x Avaliações")
+    plt.xlabel("Número de avaliações")
+    titulo = "Função Objetivo - Média por avaliação"
+    if multiplos_testes:
+        titulo += f" ({n_execucoes} execuções por configuração)"
+    plt.ylabel("Média do melhor fitness encontrado")
+    plt.title(titulo)
     plt.legend()
     plt.grid(True, linestyle="--", alpha=0.5)
     plt.tight_layout()
@@ -688,4 +770,21 @@ if __name__ == "__main__":
         "3º lugar (m=5)",
     ]
 
-    plot_convergence(test_inst, configs, labels, output_path="convergencia.png")
+    # ---------------------------------------------------------------------
+    # Função True/False que controla como o gráfico é montado:
+    #   True  -> cada uma das 3 configurações roda 10 vezes, e o gráfico é
+    #            formado com a MÉDIA dessas 10 execuções (curva mais estável,
+    #            menos sensível à sorte da seed de uma execução isolada).
+    #   False -> cada configuração roda apenas 1 vez, e o gráfico é formado
+    #            diretamente com esses dados (comportamento original).
+    # ---------------------------------------------------------------------
+    RODAR_10_VEZES = True
+
+    plot_convergence(
+        test_inst,
+        configs,
+        labels,
+        output_path="convergencia.png",
+        multiplos_testes=RODAR_10_VEZES,
+        n_execucoes=10,
+    )
