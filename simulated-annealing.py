@@ -587,9 +587,9 @@ def plot_convergence(
     Exemplo de uso (com as 3 configurações do ranking do relatório):
 
         configs = [
-            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=2, seed=1),
-            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=4, seed=1),
-            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=5, seed=1),
+            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=114, m=2, seed=1),
+            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=114, m=4, seed=1),
+            dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=114, m=5, seed=1),
         ]
         labels = ["1º lugar (m=2)", "2º lugar (m=4)", "3º lugar (m=5)"]
 
@@ -739,7 +739,7 @@ if __name__ == "__main__":
         T_max=100,
         T_min=0.01,
         alpha=0.9,
-        max_iteration=60,
+        max_iteration=114,
         m=2,
         initial_method="GISP",
         seed=1,
@@ -760,9 +760,9 @@ if __name__ == "__main__":
     # (mesmas do ranking discutido no relatório)
     # ---------------------------------------------------------------------
     configs = [
-        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=2, seed=1),
-        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=4, seed=1),
-        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=60, m=5, seed=1),
+        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=114, m=2, seed=1),
+        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=114, m=4, seed=1),
+        dict(T_max=100, T_min=0.01, alpha=0.90, max_iteration=114, m=5, seed=1),
     ]
     labels = [
         "1º lugar (m=2)",

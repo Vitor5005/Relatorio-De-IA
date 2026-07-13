@@ -1,11 +1,11 @@
-Iniciando SA (Orçamento: 5220 avaliações)...
-Ciclo 0000 | Temp:     100.00 | Melhor Custo: 50689.0 | Tempo Decorrido: 0.01s
-Ciclo 0010 | Temp:      34.87 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.15s
-Ciclo 0020 | Temp:      12.16 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.28s
-Ciclo 0030 | Temp:       4.24 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.41s
-Ciclo 0040 | Temp:       1.48 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.54s
-Ciclo 0050 | Temp:       0.52 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.67s
-Ciclo 0060 | Temp:       0.18 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.81s
-Ciclo 0070 | Temp:       0.06 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.94s
-Ciclo 0080 | Temp:       0.02 | Melhor Custo: 50694.0 | Tempo Decorrido: 1.07s
-Ciclo 0087 | Temp:       0.01 | Melhor Custo: 50694.0 | Tempo Decorrido: 1.17s  (final)
+Iniciando SA (Orçamento: 9918 avaliações)...
+Ciclo 0000 | Temp:     100.00 | Melhor Custo: 50689.0 | Tempo Decorrido: 0.03s
+Ciclo 0010 | Temp:      34.87 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.28s
+Ciclo 0020 | Temp:      12.16 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.52s
+Ciclo 0030 | Temp:       4.24 | Melhor Custo: 50694.0 | Tempo Decorrido: 0.77s
+Ciclo 0040 | Temp:       1.48 | Melhor Custo: 50694.0 | Tempo Decorrido: 1.02s
+Ciclo 0050 | Temp:       0.52 | Melhor Custo: 50694.0 | Tempo Decorrido: 1.26s
+Ciclo 0060 | Temp:       0.18 | Melhor Custo: 50694.0 | Tempo Decorrido: 1.51s
+Ciclo 0070 | Temp:       0.06 | Melhor Custo: 50694.0 | Tempo Decorrido: 1.76s
+Ciclo 0080 | Temp:       0.02 | Melhor Custo: 50694.0 | Tempo Decorrido: 2.00s
+Ciclo 0087 | Temp:       0.01 | Melhor Custo: 50694.0 | Tempo Decorrido: 2.17s  (final)
