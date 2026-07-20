@@ -10,16 +10,16 @@ BASE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = BASE_DIR.parent
 
 NOME_ARQUIVO  =  ROOT_DIR / "test_3.in"
-ARQUIVO_SAIDA = "saida3_sa.csv"
+ARQUIVO_SAIDA = "saida2_sa.csv"
 
 MAX_AVALIACOES = 10000
 
 # Parâmetros do SA
 T_MAX = 100.0
 T_MIN = 0.01
-ALPHA = 0.9
+ALPHA = 0.95
 MAX_ITERATION = 100 
-M_FLIP = 5           
+M_FLIP = 2           
 SEED = 1
 
 
@@ -101,7 +101,9 @@ def vizinho(solucao, rng, m=M_FLIP):
     return nova
 
 # EXECUÇÃO DO SA
-rng = random.Random(SEED)
+# Usa a contagem atual de colunas do CSV como semente dinâmica (ex: 1, 2, 3...)
+SEED_DINAMICA = coluna_execucao 
+rng = random.Random(SEED_DINAMICA)
 
 s = solucao_aleatoria(rng)
 f_s = fitness(s)
