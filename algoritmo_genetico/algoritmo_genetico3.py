@@ -26,7 +26,7 @@ NUM_PARENTS_MATING = 15
 PARENT_SELECTION_TYPE = "rank"
 CROSSOVER_TYPE = "uniform"
 MUTATION_TYPE = "random"
-MUTATION_PERCENT_GENES = 1
+MUTATION_PERCENT_GENES = 4
 
 avaliacao_id = 0
 first = True
@@ -186,7 +186,7 @@ ga_instance = pygad.GA(
 
     # Importante para reduzir reaproveitamento de indivíduos
     keep_parents=0,
-    keep_elitism=0
+    keep_elitism=1
 )
 
 
