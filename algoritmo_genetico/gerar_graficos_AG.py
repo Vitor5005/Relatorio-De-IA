@@ -95,7 +95,6 @@ def carregar_csv_resultados(caminho_arquivo):
             f"O arquivo {caminho_arquivo} está vazio."
         )
 
-
     # ------------------------------------------------------
     # Cabeçalho
     # ------------------------------------------------------
@@ -107,14 +106,12 @@ def carregar_csv_resultados(caminho_arquivo):
         for linha in linhas
     )
 
-
     # Caso existam mais colunas do que nomes no cabeçalho
     while len(cabecalho) < maior_tamanho:
 
         cabecalho.append(
             f"ex{len(cabecalho)}"
         )
-
 
     # ------------------------------------------------------
     # Organiza os dados
@@ -129,15 +126,13 @@ def carregar_csv_resultados(caminho_arquivo):
 
         dados.append(linha)
 
-
     df = pd.DataFrame(
         dados,
         columns=cabecalho
     )
 
-
     # ------------------------------------------------------
-    # Primeira coluna = avaliação
+    # Primeira coluna = posição de acompanhamento
     # ------------------------------------------------------
 
     primeira_coluna = df.columns[0]
@@ -148,19 +143,16 @@ def carregar_csv_resultados(caminho_arquivo):
         }
     )
 
-
-    # Converte avaliação para número
+    # Converte posição para número
     df["avaliacao"] = pd.to_numeric(
         df["avaliacao"],
         errors="coerce"
     )
 
-
-    # Remove linhas sem avaliação válida
+    # Remove linhas sem posição válida
     df = df.dropna(
         subset=["avaliacao"]
     )
-
 
     # ------------------------------------------------------
     # Identifica as colunas das execuções
@@ -172,14 +164,12 @@ def carregar_csv_resultados(caminho_arquivo):
         if coluna != "avaliacao"
     ]
 
-
     if len(colunas_execucoes) == 0:
 
         raise ValueError(
             f"O arquivo {caminho_arquivo} não possui "
             f"colunas de execução."
         )
-
 
     # ------------------------------------------------------
     # Converte resultados para números
@@ -192,7 +182,6 @@ def carregar_csv_resultados(caminho_arquivo):
             errors="coerce"
         )
 
-
     # ------------------------------------------------------
     # Calcula a média das execuções
     # ------------------------------------------------------
@@ -204,24 +193,20 @@ def carregar_csv_resultados(caminho_arquivo):
         skipna=True
     )
 
-
-    # Quantidade de execuções válidas naquela avaliação
+    # Quantidade de execuções válidas naquela posição
     df["qtd_execucoes"] = df[
         colunas_execucoes
     ].notna().sum(axis=1)
-
 
     # Remove linhas sem média
     df = df.dropna(
         subset=["media"]
     )
 
-
-    # Ordena pela avaliação
+    # Ordena pela posição de acompanhamento
     df = df.sort_values(
         "avaliacao"
     )
-
 
     return df[
         [
@@ -253,25 +238,22 @@ for nome_algoritmo, caminho_arquivo in ARQUIVOS.items():
 
         continue
 
-
     try:
 
         df = carregar_csv_resultados(
             caminho_arquivo
         )
 
-
         resultados[
             nome_algoritmo
         ] = df
-
 
         print(
             f"{nome_algoritmo}:"
         )
 
         print(
-            f"  Avaliações carregadas: {len(df)}"
+            f"  Posições carregadas: {len(df)}"
         )
 
         print(
@@ -285,7 +267,6 @@ for nome_algoritmo, caminho_arquivo in ARQUIVOS.items():
         )
 
         print()
-
 
     except Exception as erro:
 
@@ -351,11 +332,11 @@ for nome_algoritmo, df in resultados.items():
 
 
 plt.title(
-    "Função objetiva média por avaliação"
+    "Função objetiva média por posição de acompanhamento"
 )
 
 plt.xlabel(
-    "Avaliação"
+    "Posição de acompanhamento"
 )
 
 plt.ylabel(
@@ -420,7 +401,6 @@ for nome_algoritmo, df in resultados.items():
         figsize=(12, 6)
     )
 
-
     plt.plot(
         df["avaliacao"],
         df["media"],
@@ -428,17 +408,14 @@ for nome_algoritmo, df in resultados.items():
         color=CORES[nome_algoritmo]
     )
 
-
     plt.title(
-        f"Função objetiva média por avaliação - "
+        f"Função objetiva média por posição de acompanhamento - "
         f"{nome_algoritmo}"
     )
 
-
     plt.xlabel(
-        "Avaliação"
+        "Posição de acompanhamento"
     )
-
 
     plt.ylabel(
         "Média dos resultados da função objetiva"
@@ -492,7 +469,6 @@ for nome_algoritmo, df in resultados.items():
     serie = df.set_index(
         "avaliacao"
     )["media"]
-
 
     comparativo[
         nome_algoritmo
