@@ -4,189 +4,636 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-# =========================
-# CONFIGURAÇÕES
-# =========================
+# ==========================================================
+# CAMINHOS
+# ==========================================================
 
+# Pasta onde este arquivo gerar_graficos_SA.py está localizado
+PASTA_SCRIPT = os.path.dirname(os.path.abspath(__file__))
+
+# Arquivos CSV das três configurações
 ARQUIVOS = {
-    "SA Original": "saida1_sa.csv",
-    "SA Variação 1": "saida2_sa.csv",
-    "SA Variação 2": "saida3_sa.csv"
+    "SA Original": os.path.join(PASTA_SCRIPT, "saida1_sa.csv"),
+    "SA Variação 1": os.path.join(PASTA_SCRIPT, "saida2_sa.csv"),
+    "SA Variação 2": os.path.join(PASTA_SCRIPT, "saida3_sa.csv")
 }
 
-PASTA_SAIDA = "graficos"
+# Pasta onde os gráficos serão salvos
+PASTA_SAIDA = os.path.join(PASTA_SCRIPT, "graficos")
 
 os.makedirs(PASTA_SAIDA, exist_ok=True)
 
 
-# =========================
-# LEITURA GENÉRICA DO CSV
-# =========================
+# ==========================================================
+# CORES
+# ==========================================================
+
+CORES = {
+    "SA Original": "tab:blue",
+    "SA Variação 1": "tab:orange",
+    "SA Variação 2": "tab:green"
+}
+
+
+# ==========================================================
+# NOMES DOS GRÁFICOS
+# Mantidos exatamente como estavam anteriormente
+# ==========================================================
+
+NOMES_ARQUIVOS = {
+    "SA Original": "Figure_2.png",
+    "SA Variação 1": "Figure_3.png",
+    "SA Variação 2": "Figure_4.png"
+}
+
+NOME_GRAFICO_COMPARATIVO = "Figure_1.png"
+
+
+# ==========================================================
+# CONFIGURAÇÃO DO EXPERIMENTO
+# ==========================================================
+
+NUM_EXECUCOES_ESPERADAS = 10
+NUM_POSICOES_ESPERADAS = 10000
+
+
+# ==========================================================
+# DETECTAR DELIMITADOR DO CSV
+# ==========================================================
 
 def detectar_delimitador(caminho_arquivo):
-    with open(caminho_arquivo, "r", encoding="utf-8") as arquivo:
+
+    with open(
+        caminho_arquivo,
+        "r",
+        encoding="utf-8"
+    ) as arquivo:
+
         amostra = arquivo.read(2048)
 
     try:
-        dialeto = csv.Sniffer().sniff(amostra, delimiters=",;")
+
+        dialeto = csv.Sniffer().sniff(
+            amostra,
+            delimiters=",;"
+        )
+
         return dialeto.delimiter
+
     except csv.Error:
+
         return ","
 
 
+# ==========================================================
+# CARREGAR CSV E CALCULAR MÉDIA
+# ==========================================================
+
 def carregar_csv_resultados(caminho_arquivo):
+
     delimitador = detectar_delimitador(caminho_arquivo)
 
-    with open(caminho_arquivo, "r", newline="", encoding="utf-8") as arquivo:
-        leitor = csv.reader(arquivo, delimiter=delimitador)
-        linhas = list(leitor)
+    df = pd.read_csv(
+        caminho_arquivo,
+        delimiter=delimitador,
+        encoding="utf-8"
+    )
 
-    if len(linhas) == 0:
-        raise ValueError(f"O arquivo {caminho_arquivo} está vazio.")
+    # ------------------------------------------------------
+    # Verifica se o arquivo está vazio
+    # ------------------------------------------------------
 
-    cabecalho = linhas[0]
+    if df.empty:
 
-    # Garante que todas as linhas tenham o mesmo tamanho
-    maior_tamanho = max(len(linha) for linha in linhas)
+        raise ValueError(
+            f"O arquivo {caminho_arquivo} está vazio."
+        )
 
-    while len(cabecalho) < maior_tamanho:
-        cabecalho.append("ex" + str(len(cabecalho)))
+    # ------------------------------------------------------
+    # Primeira coluna deve representar a avaliação
+    # ------------------------------------------------------
 
-    dados = []
-
-    for linha in linhas[1:]:
-        while len(linha) < maior_tamanho:
-            linha.append("")
-
-        dados.append(linha)
-
-    df = pd.DataFrame(dados, columns=cabecalho)
-
-    # A primeira coluna deve ser a avaliação
     primeira_coluna = df.columns[0]
-    df = df.rename(columns={primeira_coluna: "avaliacao"})
+
+    if primeira_coluna != "avaliacao":
+
+        df = df.rename(
+            columns={
+                primeira_coluna: "avaliacao"
+            }
+        )
 
     # Converte avaliação para número
-    df["avaliacao"] = pd.to_numeric(df["avaliacao"], errors="coerce")
+    df["avaliacao"] = pd.to_numeric(
+        df["avaliacao"],
+        errors="coerce"
+    )
 
     # Remove linhas sem avaliação válida
-    df = df.dropna(subset=["avaliacao"])
+    df = df.dropna(
+        subset=["avaliacao"]
+    )
 
-    # Colunas das execuções: ex1, ex2, ex3...
-    colunas_execucoes = [coluna for coluna in df.columns if coluna != "avaliacao"]
+    # ------------------------------------------------------
+    # Identifica colunas das execuções
+    # ------------------------------------------------------
 
-    # Converte os resultados para número
+    colunas_execucoes = [
+        coluna
+        for coluna in df.columns
+        if coluna != "avaliacao"
+    ]
+
+    if len(colunas_execucoes) == 0:
+
+        raise ValueError(
+            f"O arquivo {caminho_arquivo} "
+            f"não possui colunas de execução."
+        )
+
+    # ------------------------------------------------------
+    # Verifica se existem exatamente 10 execuções
+    # ------------------------------------------------------
+
+    if len(colunas_execucoes) != NUM_EXECUCOES_ESPERADAS:
+
+        raise ValueError(
+            f"O arquivo {os.path.basename(caminho_arquivo)} possui "
+            f"{len(colunas_execucoes)} execuções, mas eram esperadas "
+            f"{NUM_EXECUCOES_ESPERADAS}.\n"
+            f"Colunas encontradas: {colunas_execucoes}"
+        )
+
+    # ------------------------------------------------------
+    # Converte valores das execuções para números
+    # ------------------------------------------------------
+
     for coluna in colunas_execucoes:
-        df[coluna] = pd.to_numeric(df[coluna], errors="coerce")
 
-    # Calcula a média das execuções em cada avaliação
-    df["media"] = df[colunas_execucoes].mean(axis=1, skipna=True)
+        df[coluna] = pd.to_numeric(
+            df[coluna],
+            errors="coerce"
+        )
 
-    # Conta quantas execuções foram usadas naquela linha
-    df["qtd_execucoes"] = df[colunas_execucoes].notna().sum(axis=1)
+    # ------------------------------------------------------
+    # Verifica valores ausentes
+    # ------------------------------------------------------
 
-    # Remove linhas sem média
-    df = df.dropna(subset=["media"])
+    valores_ausentes = df[colunas_execucoes].isna().sum().sum()
 
-    # Ordena por avaliação
-    df = df.sort_values("avaliacao")
+    if valores_ausentes > 0:
 
-    return df[["avaliacao", "media", "qtd_execucoes"]]
+        raise ValueError(
+            f"O arquivo {os.path.basename(caminho_arquivo)} possui "
+            f"{valores_ausentes} valores ausentes ou inválidos."
+        )
+
+    # ------------------------------------------------------
+    # Ordena pela avaliação
+    # ------------------------------------------------------
+
+    df = df.sort_values(
+        "avaliacao"
+    ).reset_index(drop=True)
+
+    # ------------------------------------------------------
+    # Verifica quantidade de posições
+    # ------------------------------------------------------
+
+    if len(df) != NUM_POSICOES_ESPERADAS:
+
+        print(
+            f"AVISO: {os.path.basename(caminho_arquivo)} possui "
+            f"{len(df)} posições. "
+            f"Eram esperadas {NUM_POSICOES_ESPERADAS}."
+        )
+
+    # ------------------------------------------------------
+    # Calcula média das 10 execuções em cada posição
+    # ------------------------------------------------------
+
+    df["media"] = df[
+        colunas_execucoes
+    ].mean(
+        axis=1
+    )
+
+    # ------------------------------------------------------
+    # Valores finais de cada uma das 10 execuções
+    # ------------------------------------------------------
+
+    valores_finais = df[
+        colunas_execucoes
+    ].iloc[-1]
+
+    media_final = valores_finais.mean()
+
+    # Desvio-padrão amostral
+    desvio_padrao_final = valores_finais.std(ddof=1)
+
+    melhor_execucao = valores_finais.max()
+    pior_execucao = valores_finais.min()
+
+    return {
+        "dados": df,
+        "colunas_execucoes": colunas_execucoes,
+        "valores_finais": valores_finais,
+        "media_final": media_final,
+        "desvio_padrao_final": desvio_padrao_final,
+        "melhor_execucao": melhor_execucao,
+        "pior_execucao": pior_execucao
+    }
 
 
-# =========================
-# CARREGANDO OS RESULTADOS
-# =========================
+# ==========================================================
+# CARREGAR RESULTADOS DOS 3 SAs
+# ==========================================================
 
 resultados = {}
 
+
 for nome_algoritmo, caminho_arquivo in ARQUIVOS.items():
+
     if not os.path.exists(caminho_arquivo):
-        print(f"Aviso: arquivo não encontrado: {caminho_arquivo}")
+
+        print(
+            f"AVISO: arquivo não encontrado:"
+        )
+
+        print(caminho_arquivo)
+
+        print()
+
         continue
 
-    df = carregar_csv_resultados(caminho_arquivo)
-    resultados[nome_algoritmo] = df
+    try:
 
-    print(f"{nome_algoritmo}: {len(df)} avaliações carregadas.")
-    print(f"Execuções detectadas na última linha: {int(df['qtd_execucoes'].iloc[-1])}")
-    print(f"Melhor média final: {df['media'].iloc[-1]:.2f}")
+        resultado = carregar_csv_resultados(
+            caminho_arquivo
+        )
+
+        resultados[
+            nome_algoritmo
+        ] = resultado
+
+        df = resultado["dados"]
+
+        print("=" * 60)
+        print(nome_algoritmo)
+        print("=" * 60)
+
+        print(
+            f"Posições carregadas: "
+            f"{len(df)}"
+        )
+
+        print(
+            f"Execuções detectadas: "
+            f"{len(resultado['colunas_execucoes'])}"
+        )
+
+        print()
+
+        print("Valores finais das execuções:")
+
+        for nome_execucao, valor in resultado[
+            "valores_finais"
+        ].items():
+
+            print(
+                f"  {nome_execucao}: "
+                f"{valor:.0f}"
+            )
+
+        print()
+
+        print(
+            f"Média final: "
+            f"{resultado['media_final']:.2f}"
+        )
+
+        print(
+            f"Desvio-padrão final: "
+            f"{resultado['desvio_padrao_final']:.2f}"
+        )
+
+        print(
+            f"Melhor execução: "
+            f"{resultado['melhor_execucao']:.0f}"
+        )
+
+        print(
+            f"Pior execução: "
+            f"{resultado['pior_execucao']:.0f}"
+        )
+
+        print()
+
+    except Exception as erro:
+
+        print(
+            f"ERRO ao carregar {nome_algoritmo}:"
+        )
+
+        print(erro)
+
+        print()
+
+
+# ==========================================================
+# VERIFICA SE OS TRÊS RESULTADOS FORAM CARREGADOS
+# ==========================================================
+
+if len(resultados) == 0:
+
+    print(
+        "Nenhum resultado foi carregado."
+    )
+
+    print(
+        "Verifique se os arquivos:"
+    )
+
+    print(
+        "saida1_sa.csv"
+    )
+
+    print(
+        "saida2_sa.csv"
+    )
+
+    print(
+        "saida3_sa.csv"
+    )
+
+    print(
+        "estão na mesma pasta do gerar_graficos_SA.py."
+    )
+
+    raise SystemExit
+
+
+if len(resultados) != 3:
+
+    print(
+        "AVISO: nem todas as três configurações "
+        "foram carregadas."
+    )
+
     print()
 
 
-# =========================
-# GERANDO GRÁFICO COMPARATIVO
-# =========================
+# ==========================================================
+# GRÁFICO COMPARATIVO
+# Figure_1.png
+# ==========================================================
 
-plt.figure(figsize=(12, 6))
+plt.figure(
+    figsize=(12, 6)
+)
 
-for nome_algoritmo, df in resultados.items():
+
+for nome_algoritmo, resultado in resultados.items():
+
+    df = resultado["dados"]
+
     plt.plot(
         df["avaliacao"],
         df["media"],
-        label=nome_algoritmo
+        label=nome_algoritmo,
+        color=CORES[nome_algoritmo]
     )
 
-plt.title("Função objetiva média por avaliação")
-plt.xlabel("Número de Avaliações")
-plt.ylabel("Média dos resultados da função objetiva")
+
+plt.title(
+    "Função objetiva média por posição de acompanhamento"
+)
+
+plt.xlabel(
+    "Posição de acompanhamento"
+)
+
+plt.ylabel(
+    "Média dos melhores valores acumulados"
+)
+
 plt.legend()
+
 plt.grid(True)
+
 plt.tight_layout()
 
-caminho_grafico = os.path.join(PASTA_SAIDA, "grafico_comparativo_media.png")
-plt.savefig(caminho_grafico, dpi=300)
-plt.show()
 
-print(f"Gráfico comparativo salvo em: {caminho_grafico}")
+caminho_comparativo = os.path.join(
+    PASTA_SAIDA,
+    NOME_GRAFICO_COMPARATIVO
+)
 
 
-# =========================
-# GERANDO GRÁFICOS INDIVIDUAIS
-# =========================
+plt.savefig(
+    caminho_comparativo,
+    dpi=300
+)
 
-for nome_algoritmo, df in resultados.items():
-    plt.figure(figsize=(12, 6))
+plt.close()
+
+
+print(
+    "Gráfico comparativo salvo em:"
+)
+
+print(
+    caminho_comparativo
+)
+
+print()
+
+
+# ==========================================================
+# GRÁFICOS INDIVIDUAIS
+# Figure_2.png
+# Figure_3.png
+# Figure_4.png
+# ==========================================================
+
+for nome_algoritmo, resultado in resultados.items():
+
+    df = resultado["dados"]
+
+    plt.figure(
+        figsize=(12, 6)
+    )
 
     plt.plot(
         df["avaliacao"],
         df["media"],
-        label=nome_algoritmo
+        label=nome_algoritmo,
+        color=CORES[nome_algoritmo]
     )
 
-    plt.title(f"Função objetiva média por avaliação - {nome_algoritmo}")
-    plt.xlabel("Número de Avaliação")
-    plt.ylabel("Média dos resultados da função objetiva")
+    plt.title(
+        f"Função objetiva média por posição de acompanhamento - "
+        f"{nome_algoritmo}"
+    )
+
+    plt.xlabel(
+        "Posição de acompanhamento"
+    )
+
+    plt.ylabel(
+        "Média dos melhores valores acumulados"
+    )
+
     plt.legend()
+
     plt.grid(True)
+
     plt.tight_layout()
 
-    nome_arquivo = nome_algoritmo.lower()
-    nome_arquivo = nome_arquivo.replace(" ", "_")
-    nome_arquivo = nome_arquivo.replace("ç", "c")
-    nome_arquivo = nome_arquivo.replace("ã", "a")
 
-    caminho_individual = os.path.join(PASTA_SAIDA, f"grafico_{nome_arquivo}.png")
-
-    plt.savefig(caminho_individual, dpi=300)
-    plt.show()
-
-    print(f"Gráfico individual salvo em: {caminho_individual}")
+    caminho_individual = os.path.join(
+        PASTA_SAIDA,
+        NOMES_ARQUIVOS[nome_algoritmo]
+    )
 
 
-# =========================
-# SALVANDO CSV COM AS MÉDIAS
-# =========================
+    plt.savefig(
+        caminho_individual,
+        dpi=300
+    )
+
+    plt.close()
+
+
+    print(
+        f"Gráfico individual de "
+        f"{nome_algoritmo} salvo em:"
+    )
+
+    print(
+        caminho_individual
+    )
+
+    print()
+
+
+# ==========================================================
+# CSV COMPARATIVO DAS MÉDIAS
+# ==========================================================
 
 comparativo = pd.DataFrame()
 
-for nome_algoritmo, df in resultados.items():
-    serie = df.set_index("avaliacao")["media"]
-    comparativo[nome_algoritmo] = serie
+
+for nome_algoritmo, resultado in resultados.items():
+
+    df = resultado["dados"]
+
+    serie = df.set_index(
+        "avaliacao"
+    )["media"]
+
+    comparativo[
+        nome_algoritmo
+    ] = serie
+
 
 comparativo = comparativo.reset_index()
 
-caminho_csv_media = os.path.join(PASTA_SAIDA, "medias_comparativo.csv")
-comparativo.to_csv(caminho_csv_media, index=False, encoding="utf-8")
 
-print(f"CSV com as médias salvo em: {caminho_csv_media}")
+caminho_csv_media = os.path.join(
+    PASTA_SAIDA,
+    "medias_comparativo.csv"
+)
+
+
+comparativo.to_csv(
+    caminho_csv_media,
+    index=False,
+    encoding="utf-8"
+)
+
+
+print(
+    "CSV com as médias salvo em:"
+)
+
+print(
+    caminho_csv_media
+)
+
+print()
+
+
+# ==========================================================
+# RESUMO ESTATÍSTICO FINAL
+# ==========================================================
+
+print()
+print("=" * 70)
+print("RESUMO ESTATÍSTICO FINAL DO SIMULATED ANNEALING")
+print("=" * 70)
+
+for nome_algoritmo, resultado in resultados.items():
+
+    print()
+    print(nome_algoritmo)
+
+    print(
+        f"  Média final: "
+        f"{resultado['media_final']:.2f}"
+    )
+
+    print(
+        f"  Desvio-padrão: "
+        f"{resultado['desvio_padrao_final']:.2f}"
+    )
+
+    print(
+        f"  Melhor execução: "
+        f"{resultado['melhor_execucao']:.0f}"
+    )
+
+    print(
+        f"  Pior execução: "
+        f"{resultado['pior_execucao']:.0f}"
+    )
+
+
+print()
+print("=" * 70)
+
+
+# ==========================================================
+# FINAL
+# ==========================================================
+
+print()
+print(
+    "Processamento concluído!"
+)
+
+print()
+
+print(
+    "Arquivos gerados:"
+)
+
+print(
+    "- Figure_1.png"
+)
+
+print(
+    "- Figure_2.png"
+)
+
+print(
+    "- Figure_3.png"
+)
+
+print(
+    "- Figure_4.png"
+)
+
+print(
+    "- medias_comparativo.csv"
+)
